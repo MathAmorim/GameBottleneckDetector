@@ -1,0 +1,68 @@
+{
+  "App.xaml": {
+    "mtime": 1792965518.84963,
+    "seen": 1792991203.0170121,
+    "ast_hash": "4089d2aa88461136994c3dceda2982bc",
+    "semantic_hash": "4089d2aa88461136994c3dceda2982bc"
+  },
+  "App.xaml.cs": {
+    "mtime": 1792965526.1823914,
+    "seen": 1792991203.0170121,
+    "ast_hash": "c60b758f41ae6e7c4314aa8c90590935",
+    "semantic_hash": "c60b758f41ae6e7c4314aa8c90590935"
+  },
+  "BottleneckAnalyzer.cs": {
+    "mtime": 1792993841.5802715,
+    "seen": 1792994035.461385,
+    "ast_hash": "998967ea8012f691039ee2016b1a0bd1",
+    "semantic_hash": ""
+  },
+  "FrameMonitor.cs": {
+    "mtime": 1792965438.0769107,
+    "seen": 1792991203.0170121,
+    "ast_hash": "f47ad19a92e4c4db2584a2cfb2abc9de",
+    "semantic_hash": "f47ad19a92e4c4db2584a2cfb2abc9de"
+  },
+  "GameBottleneckDetector.csproj": {
+    "mtime": 1792999486.3578358,
+    "seen": 1792999565.2427485,
+    "ast_hash": "d40098a35f3fec5f833338d6d2e39676",
+    "semantic_hash": ""
+  },
+  "HtmlReportExporter.cs": {
+    "mtime": 1792999299.8929093,
+    "seen": 1792999565.2427485,
+    "ast_hash": "48f7e449d1baecf7a6c9a1a82aa2e912",
+    "semantic_hash": ""
+  },
+  "MainWindow.xaml": {
+    "mtime": 1792999438.753227,
+    "seen": 1792999565.2427485,
+    "ast_hash": "90753eac0dfaf5345e759a7f4384f0c8",
+    "semantic_hash": ""
+  },
+  "MainWindow.xaml.cs": {
+    "mtime": 1792999474.2385974,
+    "seen": 1792999565.2427485,
+    "ast_hash": "e80f980840f173f3525324aa519a0b99",
+    "semantic_hash": ""
+  },
+  "SensorMonitor.cs": {
+    "mtime": 1792999283.2906036,
+    "seen": 1792999565.2427485,
+    "ast_hash": "dc9f70fefc711daa8a67f6fd3304910f",
+    "semantic_hash": ""
+  },
+  "SensorRow.cs": {
+    "mtime": 1792965388.8022308,
+    "seen": 1792991203.0170121,
+    "ast_hash": "8fbd88e4511c4135a80333c51ae0e0f5",
+    "semantic_hash": "8fbd88e4511c4135a80333c51ae0e0f5"
+  },
+  "AppSettings.cs": {
+    "mtime": 1792993801.4602687,
+    "seen": 1792994035.461385,
+    "ast_hash": "882cc84f833aa4db5e75a321e507b25c",
+    "semantic_hash": ""
+  }
+}

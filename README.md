@@ -13,11 +13,8 @@ Para executar ou compilar o projeto em qualquer máquina Windows, são necessár
 
 ### 2. Ambiente de Execução (.NET 8.0)
 * **Para Usuários Finais (Executar o programa pronto):**
-  * Requer o **[.NET Desktop Runtime 8.0](https://dotnet.microsoft.com/download/dotnet/8.0)** (já instalado por padrão em muitas versões recentes do Windows).
-  * O executável pré-compilado e autossuficiente está localizado em:
-    ```text
-    GameBottleneckDetector\publish\GameBottleneckDetector.exe
-    ```
+  * **Versão Standalone (Portátil - Recomendada):** Não requer nada instalado, inclui o .NET 8 e todas as dependências embutidas em um único executável. Baixe o `.zip` ou `.exe` diretamente na aba **Releases do GitHub**.
+  * **Versão Framework-Dependent (Leve):** Requer o **[.NET Desktop Runtime 8.0](https://dotnet.microsoft.com/download/dotnet/8.0)** instalado e utiliza a pasta `publish\GameBottleneckDetector.exe`.
 * **Para Desenvolvedores (Compilar e rodar via terminal):**
   * Requer o **[.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)** para utilizar os comandos `dotnet run` ou `dotnet build`.
 

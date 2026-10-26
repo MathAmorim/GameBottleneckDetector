@@ -7,7 +7,11 @@ echo   Iniciando Game Bottleneck Detector v1.2.0
 echo ===================================================
 echo.
 
-if exist "publish_v1.2\GameBottleneckDetector.exe" (
+if exist "GameBottleneckDetector.exe" (
+    start "" "GameBottleneckDetector.exe"
+) else if exist "publish_standalone\GameBottleneckDetector.exe" (
+    start "" "publish_standalone\GameBottleneckDetector.exe"
+) else if exist "publish_v1.2\GameBottleneckDetector.exe" (
     start "" "publish_v1.2\GameBottleneckDetector.exe"
 ) else if exist "publish\GameBottleneckDetector.exe" (
     start "" "publish\GameBottleneckDetector.exe"
