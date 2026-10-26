@@ -1,11 +1,94 @@
 <Window x:Class="GameBottleneckDetector.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Detector de Gargalo &amp; Diagnóstico de Jogos" 
-        Height="860" Width="1040"
-        MinHeight="700" MinWidth="880"
+        Title="Game Bottleneck Detector &amp; Diagnostic v1.1.0" 
+        Height="880" Width="1060"
+        MinHeight="720" MinWidth="900"
         Background="#0D1117"
         WindowStartupLocation="CenterScreen">
+
+    <Window.Resources>
+        <!-- Estilo Moderno e Escuro para as Abas de Navegação -->
+        <Style x:Key="NavTabButton" TargetType="RadioButton">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="tabBorder" Background="#161B22" BorderBrush="#30363D" BorderThickness="1" CornerRadius="6" Padding="18,9" Margin="0,0,10,0">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="tabBorder" Property="Background" Value="#1F6FEB"/>
+                                <Setter TargetName="tabBorder" Property="BorderBrush" Value="#58A6FF"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="False">
+                                <Setter TargetName="tabBorder" Property="Background" Value="#161B22"/>
+                                <Setter TargetName="tabBorder" Property="BorderBrush" Value="#30363D"/>
+                                <Setter Property="Foreground" Value="#8B949E"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsMouseOver" Value="True"/>
+                                    <Condition Property="IsChecked" Value="False"/>
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="tabBorder" Property="Background" Value="#21262D"/>
+                                <Setter Property="Foreground" Value="#F0F6FC"/>
+                            </MultiTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Estilo Checkbox Quadrado em formato de Card para Configurações e Seletores -->
+        <Style x:Key="SquareOption" TargetType="RadioButton">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="0,0,12,8"/>
+            <Setter Property="FontSize" Value="12.5"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="optBorder" Background="#161B22" BorderBrush="#30363D" BorderThickness="1.5" CornerRadius="6" Padding="12,8">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <!-- Checkbox Quadrado -->
+                                <Border x:Name="sqBox" Width="18" Height="18" CornerRadius="3" BorderBrush="#484F58" BorderThickness="1.5" Background="#0D1117" Margin="0,0,10,0">
+                                    <TextBlock x:Name="checkGlyph" Text="✓" Foreground="White" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
+                                </Border>
+                                <ContentPresenter VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="optBorder" Property="Background" Value="#131B26"/>
+                                <Setter TargetName="optBorder" Property="BorderBrush" Value="#1F6FEB"/>
+                                <Setter TargetName="sqBox" Property="Background" Value="#1F6FEB"/>
+                                <Setter TargetName="sqBox" Property="BorderBrush" Value="#58A6FF"/>
+                                <Setter TargetName="checkGlyph" Property="Visibility" Value="Visible"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="False">
+                                <Setter Property="Foreground" Value="#8B949E"/>
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsMouseOver" Value="True"/>
+                                    <Condition Property="IsChecked" Value="False"/>
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="optBorder" Property="BorderBrush" Value="#58A6FF"/>
+                                <Setter Property="Foreground" Value="#F0F6FC"/>
+                            </MultiTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -14,7 +97,7 @@
         </Grid.RowDefinitions>
 
         <!-- Top Navigation Bar -->
-        <Border Grid.Row="0" Background="#161B22" BorderBrush="#30363D" BorderThickness="0,0,0,1" Padding="20,10">
+        <Border Grid.Row="0" Background="#161B22" BorderBrush="#30363D" BorderThickness="0,0,0,1" Padding="20,12">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -22,26 +105,20 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Tab Buttons -->
+                <!-- Tab Buttons com alto contraste escuro -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
                     <RadioButton x:Name="TabBtnDetector" Content="📊 Detector &amp; Diagnóstico" IsChecked="True" 
-                                 Style="{StaticResource {x:Type ToggleButton}}" 
-                                 Background="Transparent" Foreground="#F0F6FC" BorderThickness="0"
-                                 FontSize="14" FontWeight="SemiBold" Padding="14,8" Margin="0,0,8,0" Cursor="Hand"
-                                 Checked="TabBtn_Checked"/>
+                                 Style="{StaticResource NavTabButton}" Checked="TabBtn_Checked"/>
                     <RadioButton x:Name="TabBtnSettings" Content="⚙️ Configurações" 
-                                 Style="{StaticResource {x:Type ToggleButton}}" 
-                                 Background="Transparent" Foreground="#8B949E" BorderThickness="0"
-                                 FontSize="14" FontWeight="SemiBold" Padding="14,8" Cursor="Hand"
-                                 Checked="TabBtn_Checked"/>
+                                 Style="{StaticResource NavTabButton}" Checked="TabBtn_Checked"/>
                 </StackPanel>
 
                 <!-- Hardware info badges -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border Background="#21262D" BorderBrush="#30363D" BorderThickness="1" CornerRadius="6" Padding="10,5" Margin="0,0,8,0">
+                    <Border Background="#21262D" BorderBrush="#30363D" BorderThickness="1" CornerRadius="6" Padding="12,6" Margin="0,0,8,0">
                         <TextBlock x:Name="TxtHardwareInfo" Text="Detectando hardware..." FontSize="12" Foreground="#8B949E"/>
                     </Border>
-                    <Border x:Name="BadgeAdmin" Background="#238636" CornerRadius="6" Padding="8,5">
+                    <Border x:Name="BadgeAdmin" Background="#238636" CornerRadius="6" Padding="10,6">
                         <TextBlock x:Name="TxtAdminStatus" Text="Admin ✓" FontSize="11" FontWeight="Bold" Foreground="White"/>
                     </Border>
                 </StackPanel>
@@ -99,34 +176,20 @@
                         </Border>
                     </Grid>
 
-                    <!-- Leituras ao Vivo: Temperaturas Separadas e Métricas Reais -->
-                    <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
-                        <StackPanel>
-                            <TextBlock Text="LEITURAS AO VIVO (SENSORES DEDICADOS)" FontSize="11" FontWeight="Bold" Foreground="#8B949E" Margin="0,0,0,14"/>
-                            
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
+                    <!-- LEITURAS AO VIVO: AGRUPADAS POR COMPONENTE (CPU vs GPU vs RAM) -->
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
 
-                                <!-- Carga GPU -->
-                                <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,10,14">
-                                    <Grid Margin="0,0,0,4">
-                                        <TextBlock Text="Carga da GPU" FontSize="12" Foreground="#8B949E"/>
-                                        <TextBlock x:Name="TxtGpuLoad" Text="0 %" FontSize="12" FontWeight="Bold" HorizontalAlignment="Right"/>
-                                    </Grid>
-                                    <ProgressBar x:Name="BarGpuLoad" Height="5" Value="0" Maximum="100" Background="#21262D" Foreground="#3FB950"/>
-                                </StackPanel>
+                        <!-- BLOCO 1: PROCESSADOR (CPU) - Todos os dados de CPU juntos -->
+                        <Border Grid.Column="0" Style="{StaticResource CardBorder}" Margin="0,0,8,0">
+                            <StackPanel>
+                                <TextBlock Text="PROCESSADOR (CPU)" FontSize="12" FontWeight="Bold" Foreground="#58A6FF" Margin="0,0,0,12"/>
 
-                                <!-- Carga CPU Total -->
-                                <StackPanel Grid.Row="0" Grid.Column="1" Margin="5,0,5,14">
+                                <!-- Carga Total CPU -->
+                                <StackPanel Margin="0,0,0,12">
                                     <Grid Margin="0,0,0,4">
                                         <TextBlock Text="Carga Total da CPU" FontSize="12" Foreground="#8B949E"/>
                                         <TextBlock x:Name="TxtCpuLoad" Text="0 %" FontSize="12" FontWeight="Bold" HorizontalAlignment="Right"/>
@@ -135,55 +198,73 @@
                                 </StackPanel>
 
                                 <!-- Núcleo Mais Ocupado -->
-                                <StackPanel Grid.Row="0" Grid.Column="2" Margin="10,0,0,14">
+                                <StackPanel Margin="0,0,0,12">
                                     <Grid Margin="0,0,0,4">
-                                        <TextBlock x:Name="LblCpuCore" Text="Núcleo mais ocupado ℹ️" FontSize="12" Foreground="#8B949E" 
-                                                   ToolTip="Mostra a carga do núcleo mais estressado. Em jogos, se este núcleo atingir 90-100%, haverá gargalo mesmo que a CPU total esteja baixa."/>
+                                        <TextBlock x:Name="LblCpuCore" Text="Núcleo Mais Ocupado ℹ️" FontSize="12" Foreground="#8B949E"
+                                                   ToolTip="Carga do núcleo individual mais estressado. Em jogos, se este núcleo bater 95-100%, o jogo travará mesmo que a CPU total esteja baixa."/>
                                         <TextBlock x:Name="TxtCpuCore" Text="—" FontSize="12" FontWeight="Bold" HorizontalAlignment="Right"/>
                                     </Grid>
                                     <ProgressBar x:Name="BarCpuCore" Height="5" Value="0" Maximum="100" Background="#21262D" Foreground="#E91E63"/>
                                 </StackPanel>
 
-                                <!-- SEPARADO: Temperatura da CPU -->
-                                <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,10,14">
+                                <!-- Temperatura da CPU -->
+                                <StackPanel Margin="0,0,0,4">
                                     <Grid Margin="0,0,0,4">
-                                        <TextBlock Text="🌡️ Temp. da CPU" FontSize="12" Foreground="#8B949E"/>
+                                        <TextBlock Text="🌡️ Temperatura da CPU" FontSize="12" Foreground="#8B949E"/>
                                         <TextBlock x:Name="TxtCpuTemp" Text="— °C" FontSize="12" FontWeight="Bold" HorizontalAlignment="Right"/>
                                     </Grid>
                                     <ProgressBar x:Name="BarCpuTemp" Height="5" Value="0" Maximum="100" Background="#21262D" Foreground="#F85149"/>
                                 </StackPanel>
+                            </StackPanel>
+                        </Border>
 
-                                <!-- SEPARADO: Temperatura da GPU -->
-                                <StackPanel Grid.Row="1" Grid.Column="1" Margin="5,0,5,14">
+                        <!-- BLOCO 2: PLACA DE VÍDEO (GPU) - Todos os dados de GPU juntos -->
+                        <Border Grid.Column="1" Style="{StaticResource CardBorder}" Margin="8,0,0,0">
+                            <StackPanel>
+                                <TextBlock Text="PLACA DE VÍDEO (GPU)" FontSize="12" FontWeight="Bold" Foreground="#3FB950" Margin="0,0,0,12"/>
+
+                                <!-- Carga da GPU -->
+                                <StackPanel Margin="0,0,0,12">
                                     <Grid Margin="0,0,0,4">
-                                        <TextBlock Text="🌡️ Temp. da GPU" FontSize="12" Foreground="#8B949E"/>
+                                        <TextBlock Text="Carga da GPU" FontSize="12" Foreground="#8B949E"/>
+                                        <TextBlock x:Name="TxtGpuLoad" Text="0 %" FontSize="12" FontWeight="Bold" HorizontalAlignment="Right"/>
+                                    </Grid>
+                                    <ProgressBar x:Name="BarGpuLoad" Height="5" Value="0" Maximum="100" Background="#21262D" Foreground="#3FB950"/>
+                                </StackPanel>
+
+                                <!-- Temperatura da GPU -->
+                                <StackPanel Margin="0,0,0,12">
+                                    <Grid Margin="0,0,0,4">
+                                        <TextBlock Text="🌡️ Temperatura da GPU" FontSize="12" Foreground="#8B949E"/>
                                         <TextBlock x:Name="TxtGpuTemp" Text="— °C" FontSize="12" FontWeight="Bold" HorizontalAlignment="Right"/>
                                     </Grid>
                                     <ProgressBar x:Name="BarGpuTemp" Height="5" Value="0" Maximum="100" Background="#21262D" Foreground="#3FB950"/>
                                 </StackPanel>
 
-                                <!-- VRAM em uso (Texto configurável % ou MB/GB) -->
-                                <StackPanel Grid.Row="1" Grid.Column="2" Margin="10,0,0,14">
+                                <!-- VRAM da GPU -->
+                                <StackPanel Margin="0,0,0,4">
                                     <Grid Margin="0,0,0,4">
-                                        <TextBlock Text="VRAM da GPU" FontSize="12" Foreground="#8B949E"/>
+                                        <TextBlock Text="Memória de Vídeo (VRAM)" FontSize="12" Foreground="#8B949E"/>
                                         <TextBlock x:Name="TxtVram" Text="0 %" FontSize="12" FontWeight="Bold" HorizontalAlignment="Right"/>
                                     </Grid>
                                     <ProgressBar x:Name="BarVram" Height="5" Value="0" Maximum="100" Background="#21262D" Foreground="#D29922"/>
                                 </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
 
-                                <!-- RAM em uso (Texto configurável % ou GB) -->
-                                <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,0">
-                                    <Grid Margin="0,0,0,4">
-                                        <TextBlock Text="Memória RAM do Sistema" FontSize="12" Foreground="#8B949E"/>
-                                        <TextBlock x:Name="TxtRam" Text="0 %" FontSize="12" FontWeight="Bold" HorizontalAlignment="Right"/>
-                                    </Grid>
-                                    <ProgressBar x:Name="BarRam" Height="5" Value="0" Maximum="100" Background="#21262D" Foreground="#BC8CFF"/>
-                                </StackPanel>
+                    <!-- BLOCO 3: MEMÓRIA RAM DO SISTEMA -->
+                    <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,4">
+                                <TextBlock Text="MEMÓRIA RAM DO SISTEMA" FontSize="12" FontWeight="Bold" Foreground="#BC8CFF"/>
+                                <TextBlock x:Name="TxtRam" Text="0 %" FontSize="12" FontWeight="Bold" HorizontalAlignment="Right"/>
                             </Grid>
+                            <ProgressBar x:Name="BarRam" Height="5" Value="0" Maximum="100" Background="#21262D" Foreground="#BC8CFF"/>
                         </StackPanel>
                     </Border>
 
-                    <!-- Painel de Análise de Sessão de Jogo com Modo Livre -->
+                    <!-- Painel de Análise de Sessão de Jogo com Checkboxes Quadrados -->
                     <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -193,19 +274,19 @@
 
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                 <TextBlock Text="ANÁLISE DE SESSÃO DE JOGO" FontSize="11" FontWeight="Bold" Foreground="#8B949E" Margin="0,0,0,4"/>
-                                <TextBlock Text="Grave toda a partida ou um trecho específico. O diagnóstico registra e identifica o motivo das travadas." 
+                                <TextBlock Text="Grave toda a partida ou um trecho específico. O diagnóstico registra segundo a segundo o motivo dos travamentos." 
                                            FontSize="13" Foreground="#F0F6FC" TextWrapping="Wrap"/>
                                 <TextBlock x:Name="TxtSessionStatus" Text="Pronto para iniciar gravação." FontSize="12" Foreground="#8B949E" Margin="0,6,0,0"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                <!-- Opções de Duração (Preservando 1, 3, 5, 10 min + Modo Livre) -->
+                                <!-- Opções de Duração com Checkbox Quadrado Estilizado -->
                                 <StackPanel x:Name="PanelDurations" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
-                                    <RadioButton x:Name="Rb1Min" Content="1 min" IsChecked="True" Foreground="#F0F6FC" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                    <RadioButton x:Name="Rb3Min" Content="3 min" Foreground="#F0F6FC" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                    <RadioButton x:Name="Rb5Min" Content="5 min" Foreground="#F0F6FC" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                    <RadioButton x:Name="Rb10Min" Content="10 min" Foreground="#F0F6FC" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                    <RadioButton x:Name="RbContinuous" Content="Livre / Até Parar" Foreground="#58A6FF" FontWeight="SemiBold" Margin="0,0,0,0" VerticalAlignment="Center"/>
+                                    <RadioButton x:Name="Rb1Min" Content="1 min" IsChecked="True" Style="{StaticResource SquareOption}"/>
+                                    <RadioButton x:Name="Rb3Min" Content="3 min" Style="{StaticResource SquareOption}"/>
+                                    <RadioButton x:Name="Rb5Min" Content="5 min" Style="{StaticResource SquareOption}"/>
+                                    <RadioButton x:Name="Rb10Min" Content="10 min" Style="{StaticResource SquareOption}"/>
+                                    <RadioButton x:Name="RbContinuous" Content="Livre / Até Parar" Style="{StaticResource SquareOption}"/>
                                 </StackPanel>
 
                                 <!-- Botões de Gravação -->
@@ -258,7 +339,7 @@
                     </Border>
                 </StackPanel>
 
-                <!-- ================= TAB 2: CONFIGURAÇÕES ================= -->
+                <!-- ================= TAB 2: CONFIGURAÇÕES COM CHECKBOX QUADRADO ================= -->
                 <StackPanel x:Name="TabContentSettings" Visibility="Collapsed">
                     <TextBlock Text="Configurações &amp; Preferências" FontSize="22" FontWeight="Bold" Foreground="#F0F6FC" Margin="0,0,0,16"/>
 
@@ -268,19 +349,19 @@
                             <TextBlock Text="FORMATO DE EXIBIÇÃO DE MEMÓRIA (RAM E VRAM)" FontSize="11" FontWeight="Bold" Foreground="#8B949E" Margin="0,0,0,12"/>
                             
                             <!-- RAM Setting -->
-                            <TextBlock Text="Exibição de Memória RAM:" FontSize="13" FontWeight="SemiBold" Foreground="#F0F6FC" Margin="0,0,0,6"/>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                                <RadioButton x:Name="RbRamGb" Content="Valores Reais em Gigabytes (ex: 7.8 GB / 16.0 GB - 48%)" Foreground="#F0F6FC" Margin="0,0,16,0" Checked="SettingChanged"/>
-                                <RadioButton x:Name="RbRamPct" Content="Apenas Percentual (ex: 48%)" Foreground="#F0F6FC" Margin="0,0,16,0" Checked="SettingChanged"/>
-                                <RadioButton x:Name="RbRamMb" Content="Megabytes (ex: 7980 MB)" Foreground="#F0F6FC" Checked="SettingChanged"/>
+                            <TextBlock Text="Exibição de Memória RAM do Sistema:" FontSize="13" FontWeight="SemiBold" Foreground="#F0F6FC" Margin="0,0,0,8"/>
+                            <StackPanel Margin="0,0,0,16">
+                                <RadioButton x:Name="RbRamGb" Content="Valores Reais em Gigabytes (ex: 7.8 GB / 16.0 GB - 48%)" Style="{StaticResource SquareOption}" Checked="SettingChanged"/>
+                                <RadioButton x:Name="RbRamPct" Content="Apenas Percentual (ex: 48%)" Style="{StaticResource SquareOption}" Checked="SettingChanged"/>
+                                <RadioButton x:Name="RbRamMb" Content="Megabytes (ex: 7980 MB / 16384 MB)" Style="{StaticResource SquareOption}" Checked="SettingChanged"/>
                             </StackPanel>
 
                             <!-- VRAM Setting -->
-                            <TextBlock Text="Exibição de Memória de Vídeo (VRAM da GPU):" FontSize="13" FontWeight="SemiBold" Foreground="#F0F6FC" Margin="0,0,0,6"/>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                <RadioButton x:Name="RbVramGb" Content="Valores Reais em Gigabytes (ex: 3.4 GB / 4.0 GB - 85%)" Foreground="#F0F6FC" Margin="0,0,16,0" Checked="SettingChanged"/>
-                                <RadioButton x:Name="RbVramPct" Content="Apenas Percentual (ex: 85%)" Foreground="#F0F6FC" Margin="0,0,16,0" Checked="SettingChanged"/>
-                                <RadioButton x:Name="RbVramMb" Content="Megabytes (ex: 3480 MB / 4096 MB)" Foreground="#F0F6FC" Checked="SettingChanged"/>
+                            <TextBlock Text="Exibição de Memória de Vídeo (VRAM da GPU):" FontSize="13" FontWeight="SemiBold" Foreground="#F0F6FC" Margin="0,0,0,8"/>
+                            <StackPanel Margin="0,0,0,10">
+                                <RadioButton x:Name="RbVramGb" Content="Valores Reais em Gigabytes (ex: 3.4 GB / 4.0 GB - 85%)" Style="{StaticResource SquareOption}" Checked="SettingChanged"/>
+                                <RadioButton x:Name="RbVramPct" Content="Apenas Percentual (ex: 85%)" Style="{StaticResource SquareOption}" Checked="SettingChanged"/>
+                                <RadioButton x:Name="RbVramMb" Content="Megabytes (ex: 3480 MB / 4096 MB)" Style="{StaticResource SquareOption}" Checked="SettingChanged"/>
                             </StackPanel>
                         </StackPanel>
                     </Border>

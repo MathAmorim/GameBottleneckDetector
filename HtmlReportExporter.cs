@@ -10,7 +10,8 @@ public static class HtmlReportExporter
         BottleneckSession session,
         string cpuName,
         string gpuName,
-        string outputPath)
+        string outputPath,
+        string ramInfo = "16.0 GB")
     {
         var main = session.Main ?? Limiter.Capped;
         var samples = session.Samples;
@@ -188,12 +189,9 @@ public static class HtmlReportExporter
 <div class=""container"">
     <header>
         <div>
-            <h1>Relatório de Diagnóstico de Jogo</h1>
+            <h1>Relatório de Diagnóstico de Jogo <span style=""font-size: 13px; font-weight: normal; color: var(--accent-blue); background: rgba(88,166,255,0.1); padding: 3px 8px; border-radius: 4px; border: 1px solid var(--border);"">v1.1.0</span></h1>
             <div style=""color: var(--text-muted); font-size: 14px; margin-top: 4px;"">
                 Jogo: <strong>{gameName}</strong> · Registrado em: {session.Start:dd/MM/yyyy HH:mm:ss} ({session.Count} amostras / {session.Count}s)
-            </div>
-            <div style=""color: var(--text-muted); font-size: 13px; margin-top: 2px;"">
-                Hardware: <strong>{cpuName}</strong> + <strong>{gpuName}</strong>
             </div>
         </div>
         <div>
@@ -202,6 +200,26 @@ public static class HtmlReportExporter
             </span>
         </div>
     </header>
+
+    <!-- Especificações do Computador -->
+    <div class=""card"" style=""margin-bottom: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; background: #161b22;"">
+        <div>
+            <div style=""color: var(--text-muted); font-size: 11px; text-transform: uppercase; font-weight: 600;"">Processador (CPU)</div>
+            <div style=""font-weight: 700; font-size: 14px; margin-top: 3px; color: #f0f6fc;"">{cpuName}</div>
+        </div>
+        <div>
+            <div style=""color: var(--text-muted); font-size: 11px; text-transform: uppercase; font-weight: 600;"">Placa de Vídeo (GPU)</div>
+            <div style=""font-weight: 700; font-size: 14px; margin-top: 3px; color: #f0f6fc;"">{gpuName}</div>
+        </div>
+        <div>
+            <div style=""color: var(--text-muted); font-size: 11px; text-transform: uppercase; font-weight: 600;"">Memória RAM do Sistema</div>
+            <div style=""font-weight: 700; font-size: 14px; margin-top: 3px; color: #f0f6fc;"">{ramInfo}</div>
+        </div>
+        <div>
+            <div style=""color: var(--text-muted); font-size: 11px; text-transform: uppercase; font-weight: 600;"">Versão do Aplicativo</div>
+            <div style=""font-weight: 700; font-size: 14px; margin-top: 3px; color: var(--accent-blue);"">Game Bottleneck Detector v1.1.0</div>
+        </div>
+    </div>
 
     {(cpuThrottled ? $@"
     <div class=""alert-box"">

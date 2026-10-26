@@ -366,7 +366,8 @@ public partial class MainWindow : Window
             string fileName = $"Relatorio_{gameName}_{DateTime.Now:yyyyMMdd_HHmmss}.html";
             string fullPath = Path.Combine(reportsDir, fileName);
 
-            HtmlReportExporter.GenerateHtmlReport(_lastFinishedSession, _cpuName, _gpuName, fullPath);
+            string ramInfo = $"{_monitor.RamTotalGb:0.1} GB";
+            HtmlReportExporter.GenerateHtmlReport(_lastFinishedSession, _cpuName, _gpuName, fullPath, ramInfo);
 
             TxtExportStatus.Text = $"✓ Relatório gerado com sucesso: {fullPath}";
 
