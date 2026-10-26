@@ -1,57 +1,87 @@
 # 🎮 Game Bottleneck Detector & Diagnostic
 
-Aplicativo focado para diagnóstico em tempo real de gargalo e travamentos em jogos, baseado no núcleo de sensores e telemetria do ResetExplode, porém com melhorias críticas de estabilidade e análise aprofundada.
+Aplicativo focado para diagnóstico em tempo real de gargalos, congelamentos (*stuttering*) e quedas de FPS em jogos no Windows, baseado no núcleo de telemetria do ResetExplode com melhorias críticas de estabilidade visual, relatórios detalhados e análise contínua.
 
 ---
 
-## ✨ Principais Melhorias em Relação ao ResetExplode Original
+## 📋 Pré-requisitos & Dependências
+
+Para executar ou compilar o projeto em qualquer máquina Windows, são necessários os seguintes componentes:
+
+### 1. Sistema Operacional
+* **Windows 10** ou **Windows 11** (64-bit).
+
+### 2. Ambiente de Execução (.NET 8.0)
+* **Para Usuários Finais (Executar o programa pronto):**
+  * Requer o **[.NET Desktop Runtime 8.0](https://dotnet.microsoft.com/download/dotnet/8.0)** (já instalado por padrão em muitas versões recentes do Windows).
+  * O executável pré-compilado e autossuficiente está localizado em:
+    ```text
+    GameBottleneckDetector\publish\GameBottleneckDetector.exe
+    ```
+* **Para Desenvolvedores (Compilar e rodar via terminal):**
+  * Requer o **[.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)** para utilizar os comandos `dotnet run` ou `dotnet build`.
+
+### 3. Privilégios de Administrador (Obrigatório)
+O aplicativo deve sempre ser executado como **Administrador** (`Executar como administrador`). 
+**Por que isso é necessário?**
+1. **Leitura dos Sensores de Temperatura:** O driver de baixo nível (*LibreHardwareMonitor*) necessita de acesso em anel de privilégio elevado (Ring 0) para consultar os registradores MSR/SMN da CPU (como as temperaturas de cada núcleo e consumo elétrico). Sem ele, o Windows não libera o acesso aos sensores térmicos do processador.
+2. **Medição Limpa de FPS (Sem Risco de Banimento):** A biblioteca *TraceEvent* escuta os eventos nativos de apresentação do DirectX/Windows (ETW - *Event Tracing for Windows*, estilo PresentMon), medindo FPS médio e 1% Low sem injetar DLLs no executável do jogo, evitando falsos-positivos em sistemas anti-cheat (como Easy Anti-Cheat, BattlEye, Vanguard).
+
+### 4. Pacotes e Bibliotecas Utilizadas (NuGet)
+As dependências são baixadas e restauradas automaticamente na primeira compilação pelo .NET:
+* `LibreHardwareMonitorLib` (v0.9.6) – Monitoramento de sensores de CPU, GPU, VRAM, RAM e temperaturas.
+* `Microsoft.Diagnostics.Tracing.TraceEvent` (v3.2.8) – Coleta em tempo real de tempos de quadro (*frametimes*) via ETW.
+* `System.Management` (v10.0.2) – Detecção de controladores do sistema e WMI.
+
+---
+
+## 🧠 Conceitos Importantes de Diagnóstico
+
+### O que é o "Núcleo Mais Ocupado" e por que ele é crucial?
+A maioria dos processadores possui 4, 8 ou 16 threads. Quando você abre o Gerenciador de Tarefas, ele exibe a **Carga Total da CPU**, que é uma média matemática de todos os núcleos.
+* **A armadilha:** Em jogos pesados, a carga total pode parecer baixa (ex: 40% ou 50%), dando a impressão de que a CPU está com bastante folga.
+* **A realidade dos jogos:** As *engines* de jogos possuem uma thread mestra de renderização e lógica (*Main Render Thread*) que é executada predominantemente em **um único núcleo**.
+* Se um único núcleo atingir **95% a 100% de uso**, todo o jogo travará esperando esse núcleo, mesmo que os demais núcleos estejam com 10% de uso.
+* **Portanto:** O indicador **"Núcleo mais ocupado"** revela o verdadeiro gargalo de processamento (*single-thread bottleneck*) em jogos.
+
+### O que é o Thermal Throttling da CPU?
+Em processadores de notebook (como o Intel Core i7-7700HQ), o limite térmico crítico (*TJMax*) é de 100 °C.
+* Ao atingir temperaturas entre 95 °C e 100 °C, o hardware ativa automaticamente o mecanismo de autoproteção **PROCHOT (Thermal Throttling)**: as frequências de clock despencam bruscamente (de ~3.4 GHz para 800 MHz – 1.2 GHz) para não queimar o silício.
+* Essa queda repentina de frequência é a **causa número 1 de travamentos violentos, microcongelamentos (*stuttering*) e quedas brutais de FPS** em notebooks gamers.
+
+---
+
+## ✨ Recursos & Melhorias Implementadas
 
 1. **Anti-Flicker com Média Móvel de 5 Segundos & Histerese:**
-   - O card "AGORA" não pisca mais de preto para branco a cada 1 segundo.
-   - Amortecimento das leituras com média ponderada dos últimos 5 segundos.
-   - Transição suave com indicador de status (*badge pill* colorida: Verde para ideal, Vermelho para térmico, Rosa para CPU, Amarelo para VRAM).
-
-2. **Temperatura Máxima da CPU no Resumo da Partida:**
-   - O aplicativo original apenas mostrava a temperatura máxima da GPU no resumo final.
-   - Agora registra e destaca expressamente a **Temperatura Máxima e Média da CPU**.
-   - Emite **Alerta de Thermal Throttling Crítico** se a CPU passar de 95 °C (especialmente importante para processadores como o Intel Core i7-7700HQ).
-
-3. **Exportação de Relatório Interativo em HTML:**
-   - Ao finalizar uma sessão (1, 3, 5 ou 10 minutos), um clique no botão **EXPORTAR RELATÓRIO (.HTML)** gera uma página web completa e moderna em tema escuro.
-   - Gráfico de linha do tempo interativo (Chart.js) comparando **FPS vs Temperatura da CPU vs Carga da GPU vs VRAM**.
-   - Identificação do exato segundo em que ocorreu o congelamento e qual componente causou a queda.
-   - Tabela segundo a segundo com destaque visual para os momentos de gargalo.
-
-4. **App Leve e Dedicado:**
-   - Sem as dezenas de módulos pesados que não são usados durante o jogo (stress tests, benchmarks de disco/Vortice, instaladores de drivers seriais, limpadores USB, etc.).
-   - Inicialização rápida e consumo mínimo de recursos em segundo plano.
+   * O card "AGORA" não pisca violentamente entre preto e branco a cada segundo.
+   * Amortecimento inteligente com média ponderada de 5 segundos e *badge pill* colorida estável.
+2. **Medidores Independentes de Temperatura:**
+   * Cartões dedicados e separados para **Temperatura da CPU** e **Temperatura da GPU**, com barras de progresso e escalas de cores dinâmicas para superaquecimento.
+3. **Aba de Configurações & Visualização Real de RAM e VRAM:**
+   * Escolha entre visualizar o uso de memória em **Percentual (%)**, **Gigabytes Reais (ex: 7.8 GB / 16.0 GB)** ou **Megabytes (MB)**.
+   * Preferências salvas automaticamente no arquivo local `settings.json`.
+4. **Análise de Sessão Livre / Contínua:**
+   * Tempos predefinidos: `[1 min]`, `[3 min]`, `[5 min]` e `[10 min]`.
+   * Modo `[Livre / Até Parar]`: jogue partidas completas (30 min, 1h ou mais) consumindo menos de 0,05% de CPU e ~300 KB de RAM por hora.
+   * Botão inteligente **"CONCLUIR ANÁLISE"**: encerre a qualquer momento e gere o relatório completo com todos os dados registrados até ali.
+5. **Relatório Interativo em HTML (.html):**
+   * Gera uma página web moderna e autossuficiente com gráfico de linha do tempo interativo (Chart.js) comparando **FPS vs Temp CPU vs Temp GPU vs VRAM vs Cargas**.
+   * Identifica o exato segundo em que o jogo travou e qual componente causou a queda.
+   * Tabela segundo a segundo com destaque visual para eventos críticos.
 
 ---
 
 ## 🚀 Como Executar
 
-Execute o script `iniciar_detector.bat` ou abra um terminal na pasta e execute:
+### Opção 1: Via Executável Compilado (Recomendado)
+Clique com o botão direito em `iniciar_detector.bat` e selecione **"Executar como administrador"**, ou execute diretamente:
+```text
+D:\projects\GameBottleneckDetector\publish\GameBottleneckDetector.exe
+```
 
+### Opção 2: Via Terminal (.NET SDK)
+Abra o PowerShell como Administrador na pasta do projeto e execute:
 ```powershell
 dotnet run
 ```
-
-> **Nota:** É recomendado executar como Administrador para que o Windows libere a leitura direta dos sensores de temperatura da CPU (via LibreHardwareMonitor) e dos eventos de apresentação de quadros via ETW (PresentMon).
-
----
-
-## 📤 Como Subir para o seu Próprio GitHub
-
-1. Inicialize o repositório git local:
-   ```powershell
-   git init
-   git add .
-   git commit -m "feat: initial commit do Game Bottleneck Detector com média móvel e exportador html"
-   ```
-2. Crie um novo repositório vazio na sua conta do GitHub (ex: `GameBottleneckDetector`).
-3. Conecte o remoto e envie:
-   ```powershell
-   git remote add origin https://github.com/SEU_USUARIO/GameBottleneckDetector.git
-   git branch -M main
-   git push -u origin main
-   ```
