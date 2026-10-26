@@ -2,6 +2,8 @@ bin/
 obj/
 publish/
 publish_v1.1/
+publish_v1.2/
+publish*/
 *.user
 *.suo
 .vs/

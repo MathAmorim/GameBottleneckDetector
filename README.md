@@ -29,6 +29,7 @@ O aplicativo deve sempre ser executado como **Administrador** (`Executar como ad
 
 ### 4. Pacotes e Bibliotecas Utilizadas (NuGet)
 As dependências são baixadas e restauradas automaticamente na primeira compilação pelo .NET:
+* `FontAwesome.Sharp` (v6.6.0) – Ícones vetoriais modernos e de alta definição na interface.
 * `LibreHardwareMonitorLib` (v0.9.6) – Monitoramento de sensores de CPU, GPU, VRAM, RAM e temperaturas.
 * `Microsoft.Diagnostics.Tracing.TraceEvent` (v3.2.8) – Coleta em tempo real de tempos de quadro (*frametimes*) via ETW.
 * `System.Management` (v10.0.2) – Detecção de controladores do sistema e WMI.

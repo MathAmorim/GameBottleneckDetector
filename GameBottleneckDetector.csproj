@@ -8,11 +8,12 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AssemblyName>GameBottleneckDetector</AssemblyName>
     <Product>Game Bottleneck Detector</Product>
-    <Version>1.1.0</Version>
+    <Version>1.2.0</Version>
     <Optimize>true</Optimize>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FontAwesome.Sharp" Version="6.6.0" />
     <PackageReference Include="LibreHardwareMonitorLib" Version="0.9.6" />
     <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.2.8" />
     <PackageReference Include="System.Management" Version="10.0.2" />

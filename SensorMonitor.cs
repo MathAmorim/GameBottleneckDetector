@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Runtime.InteropServices;
 using LibreHardwareMonitor.Hardware;
 
 namespace GameBottleneckDetector;
@@ -164,8 +165,73 @@ public sealed class SensorMonitor : IDisposable
                                                           && r.Type == SensorType.Data
                                                           && r.Name.Contains("Memory Available"))?.RawValue;
 
-    /// <summary>RAM total em GB.</summary>
-    public float? RamTotalGb => (RamUsedGb.HasValue && RamAvailableGb.HasValue) ? (RamUsedGb.Value + RamAvailableGb.Value) : 16.0f;
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+    private class MEMORYSTATUSEX
+    {
+        public uint dwLength = (uint)Marshal.SizeOf(typeof(MEMORYSTATUSEX));
+        public uint dwMemoryLoad;
+        public ulong ullTotalPhys;
+        public ulong ullAvailPhys;
+        public ulong ullTotalPageFile;
+        public ulong ullAvailPageFile;
+        public ulong ullTotalVirtual;
+        public ulong ullAvailVirtual;
+        public ulong ullAvailExtendedVirtual;
+    }
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GlobalMemoryStatusEx([In, Out] MEMORYSTATUSEX lpBuffer);
+
+    private static float? _systemTotalRamGb;
+
+    /// <summary>
+    /// Detecta a memória RAM física total instalada no computador diretamente via API do Windows (GlobalMemoryStatusEx).
+    /// </summary>
+    public static float GetSystemTotalRamGb()
+    {
+        if (_systemTotalRamGb.HasValue)
+            return _systemTotalRamGb.Value;
+
+        try
+        {
+            var memStatus = new MEMORYSTATUSEX();
+            if (GlobalMemoryStatusEx(memStatus) && memStatus.ullTotalPhys > 0)
+            {
+                double gb = (double)memStatus.ullTotalPhys / (1024.0 * 1024.0 * 1024.0);
+                _systemTotalRamGb = (float)Math.Round(gb, 1);
+                return _systemTotalRamGb.Value;
+            }
+        }
+        catch { }
+
+        try
+        {
+            long gcTotal = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes;
+            if (gcTotal > 0)
+            {
+                double gb = (double)gcTotal / (1024.0 * 1024.0 * 1024.0);
+                _systemTotalRamGb = (float)Math.Round(gb, 1);
+                return _systemTotalRamGb.Value;
+            }
+        }
+        catch { }
+
+        _systemTotalRamGb = 16.0f;
+        return _systemTotalRamGb.Value;
+    }
+
+    /// <summary>RAM total em GB do sistema (calculada dinamicamente).</summary>
+    public float? RamTotalGb
+    {
+        get
+        {
+            if (RamUsedGb.HasValue && RamAvailableGb.HasValue && (RamUsedGb.Value + RamAvailableGb.Value) > 0)
+                return RamUsedGb.Value + RamAvailableGb.Value;
+
+            return GetSystemTotalRamGb();
+        }
+    }
 
     public static bool IsElevated =>
         new System.Security.Principal.WindowsPrincipal(System.Security.Principal.WindowsIdentity.GetCurrent())

@@ -37,7 +37,8 @@ public partial class MainWindow : Window
         // Verificar Admin
         bool isAdmin = SensorMonitor.IsElevated;
         BadgeAdmin.Background = isAdmin ? (Brush)new BrushConverter().ConvertFromString("#238636")! : (Brush)new BrushConverter().ConvertFromString("#DA3633")!;
-        TxtAdminStatus.Text = isAdmin ? "Admin ✓" : "Não Admin ⚠";
+        TxtAdminStatus.Text = isAdmin ? "Admin" : "Não Admin";
+        IconAdminStatus.Icon = isAdmin ? FontAwesome.Sharp.IconChar.Check : FontAwesome.Sharp.IconChar.TriangleExclamation;
 
         // Carregar sensores e inicializar hardware
         Loaded += async (_, _) => await InitHardwareAsync();
@@ -143,18 +144,21 @@ public partial class MainWindow : Window
         TxtLiveTitle.Text = BottleneckAnalyzer.Title(activeLimiter);
         TxtLiveAdvice.Text = BottleneckAnalyzer.Advice(activeLimiter, smoothed.CpuTemp);
         TxtLiveGame.Text = frames != null
-            ? $"🎮 {frames.ProcessName} · {frames.Fps:0} FPS · 1% low {frames.Low1Fps:0} FPS"
+            ? $"{frames.ProcessName} · {frames.Fps:0} FPS · 1% low {frames.Low1Fps:0} FPS"
             : "Nenhum jogo 3D em primeiro plano (o FPS aparece automaticamente ao jogar)";
 
         PillStatus.Background = (Brush)new BrushConverter().ConvertFromString(badgeColor)!;
         TxtPillStatus.Text = activeLimiter switch
         {
-            Limiter.Thermal => "TÉRMICO ⚠",
+            Limiter.Thermal => "TÉRMICO",
             Limiter.Vram => "VRAM CHEIA",
             Limiter.Cpu => "GARGALO CPU",
             Limiter.Gpu => "GPU 100% (IDEAL)",
             _ => "ESTÁVEL"
         };
+        IconPillStatus.Icon = (activeLimiter == Limiter.Thermal || activeLimiter == Limiter.Vram || activeLimiter == Limiter.Cpu)
+            ? FontAwesome.Sharp.IconChar.TriangleExclamation
+            : FontAwesome.Sharp.IconChar.CircleCheck;
 
         // 2. Leituras ao vivo: Cargas
         float gpuLoad = smoothed.GpuLoad ?? 0;
@@ -168,7 +172,7 @@ public partial class MainWindow : Window
         if (smoothed.CpuMaxCore != null)
         {
             TxtCpuCore.Text = $"{smoothed.CpuMaxCore:0} %";
-            LblCpuCore.Text = !string.IsNullOrEmpty(smoothed.BusiestCore) ? $"Núcleo ({smoothed.BusiestCore}) ℹ️" : "Núcleo mais ocupado ℹ️";
+            LblCpuCore.Text = !string.IsNullOrEmpty(smoothed.BusiestCore) ? $"Núcleo ({smoothed.BusiestCore})" : "Núcleo Mais Ocupado";
             BarCpuCore.Value = Math.Clamp(smoothed.CpuMaxCore.Value, 0, 100);
         }
 
@@ -202,8 +206,8 @@ public partial class MainWindow : Window
 
         float ramPct = smoothed.RamPct ?? 0;
         BarRam.Value = Math.Clamp(ramPct, 0, 100);
-        float ramUsedGb = _monitor.RamUsedGb ?? ((ramPct / 100f) * 16f);
-        float ramTotalGb = _monitor.RamTotalGb ?? 16f;
+        float ramTotalGb = _monitor.RamTotalGb ?? SensorMonitor.GetSystemTotalRamGb();
+        float ramUsedGb = _monitor.RamUsedGb ?? ((ramPct / 100f) * ramTotalGb);
 
         TxtRam.Text = _settings.RamDisplayMode switch
         {
@@ -255,7 +259,7 @@ public partial class MainWindow : Window
         PanelResults.Visibility = Visibility.Collapsed;
         PanelDurations.IsEnabled = false;
 
-        BtnSession.Content = "CONCLUIR ANÁLISE ↗";
+        BtnSession.Content = "CONCLUIR ANÁLISE";
         BtnSession.Style = (Style)FindResource("SecondaryButton");
         BtnDiscardSession.Visibility = Visibility.Visible;
 
@@ -318,7 +322,7 @@ public partial class MainWindow : Window
         if (maxCpu >= 95)
         {
             BoxThermalAlert.Visibility = Visibility.Visible;
-            TxtThermalAlert.Text = $"⚠️ SUPER-AQUECIMENTO (THERMAL THROTTLING): A CPU atingiu {maxCpu:0} °C durante a partida! " +
+            TxtThermalAlert.Text = $"SUPER-AQUECIMENTO (THERMAL THROTTLING): A CPU atingiu {maxCpu:0} °C durante a partida! " +
                                    $"Ao ultrapassar 95 °C, o processador Core i7-7700HQ corta bruscamente a frequência para evitar queima física. " +
                                    $"Isso causa quedas instantâneas de FPS e congelamentos de tela.";
         }
@@ -366,7 +370,7 @@ public partial class MainWindow : Window
             string fileName = $"Relatorio_{gameName}_{DateTime.Now:yyyyMMdd_HHmmss}.html";
             string fullPath = Path.Combine(reportsDir, fileName);
 
-            string ramInfo = $"{_monitor.RamTotalGb:0.1} GB";
+            string ramInfo = $"{(_monitor.RamTotalGb ?? SensorMonitor.GetSystemTotalRamGb()):0.1} GB";
             HtmlReportExporter.GenerateHtmlReport(_lastFinishedSession, _cpuName, _gpuName, fullPath, ramInfo);
 
             TxtExportStatus.Text = $"✓ Relatório gerado com sucesso: {fullPath}";

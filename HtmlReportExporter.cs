@@ -11,8 +11,9 @@ public static class HtmlReportExporter
         string cpuName,
         string gpuName,
         string outputPath,
-        string ramInfo = "16.0 GB")
+        string? ramInfo = null)
     {
+        ramInfo ??= $"{SensorMonitor.GetSystemTotalRamGb():0.0} GB";
         var main = session.Main ?? Limiter.Capped;
         var samples = session.Samples;
         string gameName = samples.FirstOrDefault(s => !string.IsNullOrEmpty(s.GameProcess))?.GameProcess ?? "Jogo / Aplicação 3D";
