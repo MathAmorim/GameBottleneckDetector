@@ -122,10 +122,8 @@ public sealed class SensorMonitor : IDisposable
     {
         get
         {
-            var used = Rows.FirstOrDefault(r => (r.HardwareType == HardwareType.GpuNvidia || r.HardwareType == HardwareType.GpuAmd)
-                                             && r.Name.Contains("GPU Memory Used"))?.RawValue;
-            var total = Rows.FirstOrDefault(r => (r.HardwareType == HardwareType.GpuNvidia || r.HardwareType == HardwareType.GpuAmd)
-                                              && r.Name.Contains("GPU Memory Total"))?.RawValue;
+            var used = VramUsedMb;
+            var total = VramTotalMb;
             if (used != null && total is > 0)
                 return 100.0 * used.Value / total.Value;
 
@@ -137,10 +135,37 @@ public sealed class SensorMonitor : IDisposable
         }
     }
 
+    /// <summary>VRAM usada em MB.</summary>
+    public float? VramUsedMb => Rows.FirstOrDefault(r => (r.HardwareType == HardwareType.GpuNvidia || r.HardwareType == HardwareType.GpuAmd)
+                                                      && r.Name.Contains("GPU Memory Used"))?.RawValue;
+
+    /// <summary>VRAM total em MB.</summary>
+    public float? VramTotalMb => Rows.FirstOrDefault(r => (r.HardwareType == HardwareType.GpuNvidia || r.HardwareType == HardwareType.GpuAmd)
+                                                       && r.Name.Contains("GPU Memory Total"))?.RawValue ?? 4096f;
+
+    /// <summary>VRAM usada em GB.</summary>
+    public float? VramUsedGb => VramUsedMb.HasValue ? VramUsedMb.Value / 1024f : null;
+
+    /// <summary>VRAM total em GB.</summary>
+    public float? VramTotalGb => VramTotalMb.HasValue ? VramTotalMb.Value / 1024f : 4.0f;
+
     /// <summary>Uso de RAM em %.</summary>
     public float? RamUsagePct => Rows.FirstOrDefault(r => r.HardwareType == HardwareType.Memory
                                                        && r.Type == SensorType.Load
                                                        && r.Name == "Memory")?.RawValue;
+
+    /// <summary>RAM usada em GB.</summary>
+    public float? RamUsedGb => Rows.FirstOrDefault(r => r.HardwareType == HardwareType.Memory
+                                                     && r.Type == SensorType.Data
+                                                     && r.Name.Contains("Memory Used"))?.RawValue;
+
+    /// <summary>RAM disponível em GB.</summary>
+    public float? RamAvailableGb => Rows.FirstOrDefault(r => r.HardwareType == HardwareType.Memory
+                                                          && r.Type == SensorType.Data
+                                                          && r.Name.Contains("Memory Available"))?.RawValue;
+
+    /// <summary>RAM total em GB.</summary>
+    public float? RamTotalGb => (RamUsedGb.HasValue && RamAvailableGb.HasValue) ? (RamUsedGb.Value + RamAvailableGb.Value) : 16.0f;
 
     public static bool IsElevated =>
         new System.Security.Principal.WindowsPrincipal(System.Security.Principal.WindowsIdentity.GetCurrent())
