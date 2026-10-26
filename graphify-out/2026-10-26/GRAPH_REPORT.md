@@ -1,17 +1,17 @@
 # Graph Report - GameBottleneckDetector  (2026-10-26)
 
 ## Corpus Check
-- 12 files · ~8,352 words
+- 11 files · ~7,971 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 2 file(s) not represented in the graph (top: (none) 1, .manifest 1)
 
 ## Summary
-- 246 nodes · 397 edges · 11 communities (9 shown, 2 thin omitted)
+- 243 nodes · 395 edges · 10 communities (9 shown, 1 thin omitted)
 - Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 15 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `6237513c`
+- Built from commit: `b498730a`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -24,7 +24,6 @@
 - SensorMonitor
 - SensorRow
 - Limiter
-- 🎨 Mapeamento de Ícones do Game Bottleneck Detector
 - GameBottleneckDetector.csproj
 - RadioButton
 
@@ -55,7 +54,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (11 total, 2 thin omitted)
+## Communities (10 total, 1 thin omitted)
 
 ### Community 0 - "Window"
 Cohesion: 0.06
@@ -95,14 +94,14 @@ Nodes (14): Rb10Min, Rb1Min, Rb3Min, Rb5Min, RbContinuous, RbRamGb, RbRamMb, RbR
 
 ## Knowledge Gaps
 - **64 isolated node(s):** `Percentage`, `Gigabytes`, `Megabytes`, `RamDisplayMode`, `VramDisplayMode` (+59 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 95 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **2 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+  These have ≤1 connection - possible missing edges. (Counts symbols only; 93 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **1 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `MainWindow` connect `MainWindow` to `Window`, `FrameMonitor`, `GameBottleneckDetector`, `.UpdateTelemetry`, `SensorMonitor`, `Limiter`, `RadioButton`?**
-  _High betweenness centrality (0.564) - this node is a cross-community bridge._
+  _High betweenness centrality (0.578) - this node is a cross-community bridge._
 - **Are the 2 inferred relationships involving `MainWindow` (e.g. with `.Dispose()` and `.Dispose()`) actually correct?**
   _`MainWindow` has 2 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `Percentage`, `Gigabytes`, `Megabytes` to the rest of the system?**
@@ -110,8 +109,8 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `Window` be split into smaller, more focused modules?**
   _Cohesion score 0.05649717514124294 - nodes in this community are weakly interconnected._
 - **Why does `Window` connect `Window` to `RadioButton`, `MainWindow`?**
-  _High betweenness centrality (0.458) - this node is a cross-community bridge._
+  _High betweenness centrality (0.470) - this node is a cross-community bridge._
 - **Should `GameBottleneckDetector` be split into smaller, more focused modules?**
   _Cohesion score 0.10333333333333333 - nodes in this community are weakly interconnected._
 - **Why does `SensorMonitor` connect `SensorMonitor` to `FrameMonitor`, `GameBottleneckDetector`, `.UpdateTelemetry`, `MainWindow`, `SensorRow`?**
-  _High betweenness centrality (0.307) - this node is a cross-community bridge._
+  _High betweenness centrality (0.314) - this node is a cross-community bridge._

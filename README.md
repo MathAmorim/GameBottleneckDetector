@@ -74,9 +74,8 @@ Em processadores de notebook (como o Intel Core i7-7700HQ), o limite térmico cr
 
 ### Opção 1: Via Executável (Recomendado)
 Execute o `GameBottleneckDetector.exe` como Administrador (clique com o botão direito e selecione **"Executar como administrador"**):
-```text
-GameBottleneckDetector.exe
-```
+**[GameBottleneckDetector.exe](https://github.com/MathAmorim/GameBottleneckDetector/releases)**
+
 
 ### Opção 2: Via Terminal (.NET SDK)
 Abra o PowerShell como Administrador na pasta do projeto e execute:

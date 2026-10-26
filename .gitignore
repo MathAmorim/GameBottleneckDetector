@@ -8,7 +8,7 @@ publish*/
 *.suo
 .vs/
 Relatorios/
-
+AppIcons/
 # Permitir que a pasta graphify-out seja versionada no git (exceto cache transitório)
 !graphify-out/
 !graphify-out/**

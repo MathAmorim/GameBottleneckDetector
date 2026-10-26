@@ -9,8 +9,13 @@
     <AssemblyName>GameBottleneckDetector</AssemblyName>
     <Product>Game Bottleneck Detector</Product>
     <Version>1.2.0</Version>
+    <ApplicationIcon>app.ico</ApplicationIcon>
     <Optimize>true</Optimize>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="app.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="FontAwesome.Sharp" Version="6.6.0" />
