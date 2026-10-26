@@ -24,9 +24,9 @@
     "semantic_hash": "f47ad19a92e4c4db2584a2cfb2abc9de"
   },
   "GameBottleneckDetector.csproj": {
-    "mtime": 1793001357.119411,
-    "seen": 1793001766.5689495,
-    "ast_hash": "e85f071a64edfba880e3438c97d56400",
+    "mtime": 1793051209.3299968,
+    "seen": 1793051334.425325,
+    "ast_hash": "ed3b249293ab745e7c593a887eaff939",
     "semantic_hash": ""
   },
   "HtmlReportExporter.cs": {
@@ -36,15 +36,15 @@
     "semantic_hash": ""
   },
   "MainWindow.xaml": {
-    "mtime": 1793001373.2449415,
-    "seen": 1793001766.5689495,
-    "ast_hash": "a803ebd2935d0036f81bcbd3c3c92c7d",
+    "mtime": 1793051225.1319547,
+    "seen": 1793051334.425325,
+    "ast_hash": "70c8719552b4b50d811eb3fac4e22360",
     "semantic_hash": ""
   },
   "MainWindow.xaml.cs": {
-    "mtime": 1793049576.9338558,
-    "seen": 1793050025.6200798,
-    "ast_hash": "a9155b002b78814b833505bbe214ac28",
+    "mtime": 1793051241.9621751,
+    "seen": 1793051334.425325,
+    "ast_hash": "4ef28ff0adc56020f487f47fde99c114",
     "semantic_hash": ""
   },
   "SensorMonitor.cs": {
@@ -63,6 +63,12 @@
     "mtime": 1792993801.4602687,
     "seen": 1792994035.461385,
     "ast_hash": "882cc84f833aa4db5e75a321e507b25c",
+    "semantic_hash": ""
+  },
+  "AppInfo.cs": {
+    "mtime": 1793051195.6400423,
+    "seen": 1793051334.425325,
+    "ast_hash": "e05bba40f83adc3f554bbc3e798ac3f7",
     "semantic_hash": ""
   }
 }

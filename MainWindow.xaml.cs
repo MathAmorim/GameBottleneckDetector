@@ -25,6 +25,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        Title = $"Game Bottleneck Detector & Diagnostic v{AppInfo.Version}";
 
         _settings = AppSettings.Load();
         _monitor = new SensorMonitor();

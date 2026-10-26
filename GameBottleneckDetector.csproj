@@ -9,6 +9,7 @@
     <AssemblyName>GameBottleneckDetector</AssemblyName>
     <Product>Game Bottleneck Detector</Product>
     <Version>1.2.0</Version>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <ApplicationIcon>app.ico</ApplicationIcon>
     <Optimize>true</Optimize>
   </PropertyGroup>

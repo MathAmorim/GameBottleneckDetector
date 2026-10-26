@@ -1,17 +1,17 @@
 # Graph Report - GameBottleneckDetector  (2026-10-26)
 
 ## Corpus Check
-- 11 files · ~7,978 words
+- 11 files · ~8,277 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 3 file(s) not represented in the graph (top: (none) 1, .ico 1, .manifest 1)
 
 ## Summary
-- 243 nodes · 395 edges · 10 communities (9 shown, 1 thin omitted)
+- 244 nodes · 397 edges · 10 communities (9 shown, 1 thin omitted)
 - Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 15 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `b27611ed`
+- Built from commit: `122f58e2`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -65,8 +65,8 @@ Cohesion: 0.17
 Nodes (4): FrameMonitor, Error, Running, FrameStats
 
 ### Community 2 - "GameBottleneckDetector"
-Cohesion: 0.10
-Nodes (4): Application, App, GameBottleneckDetector, HtmlReportExporter
+Cohesion: 0.11
+Nodes (3): Application, App, GameBottleneckDetector
 
 ### Community 4 - "MainWindow"
 Cohesion: 0.11
@@ -82,7 +82,7 @@ Nodes (11): SensorRow, Category, Hardware, HardwareType, Id, Max, Min, Name (+3 
 
 ### Community 7 - "Limiter"
 Cohesion: 0.08
-Nodes (21): BottleneckSession, AvgFps, AvgLow1, Count, Done, Duration, IsContinuous, Main (+13 more)
+Nodes (22): BottleneckSession, AvgFps, AvgLow1, Count, Done, Duration, IsContinuous, Main (+14 more)
 
 ### Community 9 - "GameBottleneckDetector.csproj"
 Cohesion: 0.29
@@ -101,7 +101,7 @@ Nodes (14): Rb10Min, Rb1Min, Rb3Min, Rb5Min, RbContinuous, RbRamGb, RbRamMb, RbR
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `MainWindow` connect `MainWindow` to `Window`, `FrameMonitor`, `GameBottleneckDetector`, `.UpdateTelemetry`, `SensorMonitor`, `Limiter`, `RadioButton`?**
-  _High betweenness centrality (0.578) - this node is a cross-community bridge._
+  _High betweenness centrality (0.576) - this node is a cross-community bridge._
 - **Are the 2 inferred relationships involving `MainWindow` (e.g. with `.Dispose()` and `.Dispose()`) actually correct?**
   _`MainWindow` has 2 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `Percentage`, `Gigabytes`, `Megabytes` to the rest of the system?**
@@ -109,8 +109,8 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `Window` be split into smaller, more focused modules?**
   _Cohesion score 0.05649717514124294 - nodes in this community are weakly interconnected._
 - **Why does `Window` connect `Window` to `RadioButton`, `MainWindow`?**
-  _High betweenness centrality (0.470) - this node is a cross-community bridge._
+  _High betweenness centrality (0.468) - this node is a cross-community bridge._
 - **Should `GameBottleneckDetector` be split into smaller, more focused modules?**
-  _Cohesion score 0.10333333333333333 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.10869565217391304 - nodes in this community are weakly interconnected._
 - **Why does `SensorMonitor` connect `SensorMonitor` to `FrameMonitor`, `GameBottleneckDetector`, `.UpdateTelemetry`, `MainWindow`, `SensorRow`?**
-  _High betweenness centrality (0.314) - this node is a cross-community bridge._
+  _High betweenness centrality (0.313) - this node is a cross-community bridge._
