@@ -13,7 +13,11 @@ public static class HtmlReportExporter
         string outputPath,
         string? ramInfo = null)
     {
-        ramInfo ??= $"{SensorMonitor.GetSystemTotalRamGb():0.0} GB";
+        if (string.IsNullOrEmpty(ramInfo))
+        {
+            float rGb = SensorMonitor.GetSystemTotalRamGb();
+            ramInfo = (rGb % 1 == 0) ? $"{rGb:0} GB" : $"{rGb:0.0} GB";
+        }
         var main = session.Main ?? Limiter.Capped;
         var samples = session.Samples;
         string gameName = samples.FirstOrDefault(s => !string.IsNullOrEmpty(s.GameProcess))?.GameProcess ?? "Jogo / Aplicação 3D";
@@ -55,6 +59,8 @@ public static class HtmlReportExporter
     <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
     <title>Relatório de Desempenho & Gargalo - {gameName}</title>
     <script src=""https://cdn.jsdelivr.net/npm/chart.js""></script>
+    <script src=""https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js""></script>
+    <script src=""https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js""></script>
     <style>
         :root {{
             --bg: #0d1117;
@@ -184,15 +190,19 @@ public static class HtmlReportExporter
             border: 1px solid var(--border);
             border-radius: 8px;
         }}
+        #btnResetZoom:hover {{
+            background: var(--surface-hover) !important;
+            border-color: var(--accent-blue) !important;
+        }}
     </style>
 </head>
 <body>
 <div class=""container"">
     <header>
         <div>
-            <h1>Relatório de Diagnóstico de Jogo <span style=""font-size: 13px; font-weight: normal; color: var(--accent-blue); background: rgba(88,166,255,0.1); padding: 3px 8px; border-radius: 4px; border: 1px solid var(--border);"">v1.1.0</span></h1>
+            <h1>Relatório de Diagnóstico de Jogo</h1>
             <div style=""color: var(--text-muted); font-size: 14px; margin-top: 4px;"">
-                Jogo: <strong>{gameName}</strong> · Registrado em: {session.Start:dd/MM/yyyy HH:mm:ss} ({session.Count} amostras / {session.Count}s)
+                Jogo: <strong>{gameName}</strong> · Registrado em: {session.Start:dd/MM/yyyy HH:mm:ss} ({session.Count} amostras · Duração: {FormatDuration(session.Count)})
             </div>
         </div>
         <div>
@@ -215,10 +225,6 @@ public static class HtmlReportExporter
         <div>
             <div style=""color: var(--text-muted); font-size: 11px; text-transform: uppercase; font-weight: 600;"">Memória RAM do Sistema</div>
             <div style=""font-weight: 700; font-size: 14px; margin-top: 3px; color: #f0f6fc;"">{ramInfo}</div>
-        </div>
-        <div>
-            <div style=""color: var(--text-muted); font-size: 11px; text-transform: uppercase; font-weight: 600;"">Versão do Aplicativo</div>
-            <div style=""font-weight: 700; font-size: 14px; margin-top: 3px; color: var(--accent-blue);"">Game Bottleneck Detector v1.1.0</div>
         </div>
     </div>
 
@@ -293,6 +299,14 @@ public static class HtmlReportExporter
     </div>
 
     <div class=""section-title"">Linha do Tempo: FPS vs Temperaturas e Cargas</div>
+    <div style=""display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;"">
+        <span style=""font-size: 13px; color: var(--text-muted); display: inline-flex; align-items: center; gap: 6px;"">
+            🔍 <span><strong>Zoom Interativo:</strong> Selecione um trecho no gráfico para aproximar. Use a rodinha do mouse para ampliar ou segure Ctrl para arrastar.</span>
+        </span>
+        <button id=""btnResetZoom"" onclick=""resetChartZoom()"" style=""background: var(--surface); border: 1px solid var(--border); color: var(--accent-blue); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease;"">
+            <span>🔄 Resetar Zoom</span>
+        </button>
+    </div>
     <div class=""chart-container"">
         <canvas id=""perfChart""></canvas>
     </div>
@@ -304,7 +318,7 @@ public static class HtmlReportExporter
         <p><strong>3. Otimização de Gráficos:</strong> " + (vramFull ? "Mantenha a qualidade das texturas no Médio para não ultrapassar a VRAM de 4GB." : "Ajuste configurações que pesam na CPU (distância de visão, densidade de NPCs/multidões) para aliviar o i7-7700HQ.") + @"</p>
     </div>
 
-    <div class=""section-title"">Leituras Detalhadas Segundo a Segundo (" + samples.Count + @" Amostras)</div>
+    <div class=""section-title"">Leituras Detalhadas Segundo a Segundo (" + samples.Count + @" Amostras · Duração: " + FormatDuration(samples.Count) + @")</div>
     <div class=""table-wrap"">
         <table>
             <thead>
@@ -329,9 +343,14 @@ public static class HtmlReportExporter
             var l = s.Classify();
             string rowClass = l == Limiter.Thermal ? "style=\"background: rgba(218,54,51,0.15);\"" :
                              l == Limiter.Vram ? "style=\"background: rgba(210,153,34,0.15);\"" : "";
+            int curSec = sec++;
+            string timeFormatted = curSec >= 60 
+                ? $"{curSec / 60:D2}:{curSec % 60:D2} ({curSec}s)" 
+                : $"{curSec}s";
+
             sb.Append($@"
                 <tr {rowClass}>
-                    <td>{sec++}s</td>
+                    <td>{timeFormatted}</td>
                     <td><strong>{(s.Fps is > 0 ? $"{s.Fps:0}" : "—")}</strong></td>
                     <td>{(s.Low1Fps is > 0 ? $"{s.Low1Fps:0}" : "—")}</td>
                     <td style=""color: {(s.CpuTemp >= 95 ? "#f85149; font-weight: bold;" : "#f0f6fc")}"">{s.CpuTemp:0} °C</td>
@@ -352,7 +371,7 @@ public static class HtmlReportExporter
 
 <script>
     const ctx = document.getElementById('perfChart').getContext('2d');
-    new Chart(ctx, {{
+    window.perfChartInstance = new Chart(ctx, {{
         type: 'line',
         data: {{
             labels: {JsonSerializer.Serialize(labels)},
@@ -374,6 +393,14 @@ public static class HtmlReportExporter
                     yAxisID: 'yPct',
                     borderWidth: 2,
                     borderDash: [4, 4],
+                    pointRadius: 0
+                }},
+                {{
+                    label: 'Carga CPU (%)',
+                    data: {JsonSerializer.Serialize(cpuLoadData)},
+                    borderColor: '#bc8cff',
+                    yAxisID: 'yPct',
+                    borderWidth: 1.5,
                     pointRadius: 0
                 }},
                 {{
@@ -421,15 +448,64 @@ public static class HtmlReportExporter
                 }}
             }},
             plugins: {{
-                legend: {{ labels: {{ color: '#c9d1d9' }} }}
+                legend: {{ labels: {{ color: '#c9d1d9' }} }},
+                zoom: {{
+                    pan: {{
+                        enabled: true,
+                        mode: 'x',
+                        modifierKey: 'ctrl'
+                    }},
+                    zoom: {{
+                        drag: {{
+                            enabled: true,
+                            backgroundColor: 'rgba(88, 166, 255, 0.2)',
+                            borderColor: '#58a6ff',
+                            borderWidth: 1
+                        }},
+                        wheel: {{
+                            enabled: true
+                        }},
+                        pinch: {{
+                            enabled: true
+                        }},
+                        mode: 'x'
+                    }}
+                }}
             }}
         }}
     }});
+
+    window.resetChartZoom = function() {{
+        if (window.perfChartInstance && typeof window.perfChartInstance.resetZoom === 'function') {{
+            window.perfChartInstance.resetZoom();
+        }}
+    }};
 </script>
 </body>
 </html>");
 
         File.WriteAllText(outputPath, sb.ToString(), Encoding.UTF8);
         return outputPath;
+    }
+
+    private static string FormatDuration(int totalSeconds)
+    {
+        if (totalSeconds < 60)
+            return $"{totalSeconds}s";
+
+        int hours = totalSeconds / 3600;
+        int minutes = (totalSeconds % 3600) / 60;
+        int seconds = totalSeconds % 60;
+
+        if (hours > 0)
+        {
+            return seconds > 0
+                ? $"{hours}h {minutes:D2}min {seconds:D2}s"
+                : $"{hours}h {minutes:D2}min";
+        }
+
+        return seconds > 0
+            ? $"{minutes} min {seconds:D2}s"
+            : $"{minutes} min";
     }
 }

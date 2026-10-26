@@ -151,19 +151,40 @@ public sealed class SensorMonitor : IDisposable
     public float? VramTotalGb => VramTotalMb.HasValue ? VramTotalMb.Value / 1024f : 4.0f;
 
     /// <summary>Uso de RAM em %.</summary>
-    public float? RamUsagePct => Rows.FirstOrDefault(r => r.HardwareType == HardwareType.Memory
-                                                       && r.Type == SensorType.Load
-                                                       && r.Name == "Memory")?.RawValue;
+    public float? RamUsagePct
+    {
+        get
+        {
+            var mem = Rows.Where(r => r.HardwareType == HardwareType.Memory
+                                   && r.Type == SensorType.Load
+                                   && r.Name == "Memory").ToList();
+            return mem.FirstOrDefault(r => r.Hardware != "Virtual Memory")?.RawValue ?? mem.FirstOrDefault()?.RawValue;
+        }
+    }
 
     /// <summary>RAM usada em GB.</summary>
-    public float? RamUsedGb => Rows.FirstOrDefault(r => r.HardwareType == HardwareType.Memory
-                                                     && r.Type == SensorType.Data
-                                                     && r.Name.Contains("Memory Used"))?.RawValue;
+    public float? RamUsedGb
+    {
+        get
+        {
+            var used = Rows.Where(r => r.HardwareType == HardwareType.Memory
+                                    && r.Type == SensorType.Data
+                                    && r.Name.Contains("Memory Used")).ToList();
+            return used.FirstOrDefault(r => r.Hardware != "Virtual Memory")?.RawValue ?? used.FirstOrDefault()?.RawValue;
+        }
+    }
 
     /// <summary>RAM disponível em GB.</summary>
-    public float? RamAvailableGb => Rows.FirstOrDefault(r => r.HardwareType == HardwareType.Memory
-                                                          && r.Type == SensorType.Data
-                                                          && r.Name.Contains("Memory Available"))?.RawValue;
+    public float? RamAvailableGb
+    {
+        get
+        {
+            var avail = Rows.Where(r => r.HardwareType == HardwareType.Memory
+                                     && r.Type == SensorType.Data
+                                     && r.Name.Contains("Memory Available")).ToList();
+            return avail.FirstOrDefault(r => r.Hardware != "Virtual Memory")?.RawValue ?? avail.FirstOrDefault()?.RawValue;
+        }
+    }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
     private class MEMORYSTATUSEX
@@ -199,7 +220,8 @@ public sealed class SensorMonitor : IDisposable
             if (GlobalMemoryStatusEx(memStatus) && memStatus.ullTotalPhys > 0)
             {
                 double gb = (double)memStatus.ullTotalPhys / (1024.0 * 1024.0 * 1024.0);
-                _systemTotalRamGb = (float)Math.Round(gb, 1);
+                double nearestInt = Math.Round(gb);
+                _systemTotalRamGb = Math.Abs(gb - nearestInt) <= 0.35 ? (float)nearestInt : (float)Math.Round(gb, 1);
                 return _systemTotalRamGb.Value;
             }
         }
@@ -211,7 +233,8 @@ public sealed class SensorMonitor : IDisposable
             if (gcTotal > 0)
             {
                 double gb = (double)gcTotal / (1024.0 * 1024.0 * 1024.0);
-                _systemTotalRamGb = (float)Math.Round(gb, 1);
+                double nearestInt = Math.Round(gb);
+                _systemTotalRamGb = Math.Abs(gb - nearestInt) <= 0.35 ? (float)nearestInt : (float)Math.Round(gb, 1);
                 return _systemTotalRamGb.Value;
             }
         }
@@ -222,16 +245,7 @@ public sealed class SensorMonitor : IDisposable
     }
 
     /// <summary>RAM total em GB do sistema (calculada dinamicamente).</summary>
-    public float? RamTotalGb
-    {
-        get
-        {
-            if (RamUsedGb.HasValue && RamAvailableGb.HasValue && (RamUsedGb.Value + RamAvailableGb.Value) > 0)
-                return RamUsedGb.Value + RamAvailableGb.Value;
-
-            return GetSystemTotalRamGb();
-        }
-    }
+    public float? RamTotalGb => GetSystemTotalRamGb();
 
     public static bool IsElevated =>
         new System.Security.Principal.WindowsPrincipal(System.Security.Principal.WindowsIdentity.GetCurrent())

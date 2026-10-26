@@ -1,6 +1,6 @@
 # 🎮 Game Bottleneck Detector & Diagnostic
 
-Aplicativo focado para diagnóstico em tempo real de gargalos, congelamentos (*stuttering*) e quedas de FPS em jogos no Windows, baseado no núcleo de telemetria do ResetExplode com melhorias críticas de estabilidade visual, relatórios detalhados e análise contínua.
+Aplicativo focado para diagnóstico em tempo real de gargalos, congelamentos (*stuttering*) e quedas de FPS em jogos no Windows, com relatórios detalhados e análise contínua.
 
 ---
 

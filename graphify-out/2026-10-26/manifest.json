@@ -24,9 +24,9 @@
     "semantic_hash": "f47ad19a92e4c4db2584a2cfb2abc9de"
   },
   "GameBottleneckDetector.csproj": {
-    "mtime": 1792999486.3578358,
-    "seen": 1792999565.2427485,
-    "ast_hash": "d40098a35f3fec5f833338d6d2e39676",
+    "mtime": 1793001357.119411,
+    "seen": 1793001766.5689495,
+    "ast_hash": "e85f071a64edfba880e3438c97d56400",
     "semantic_hash": ""
   },
   "HtmlReportExporter.cs": {
@@ -36,9 +36,9 @@
     "semantic_hash": ""
   },
   "MainWindow.xaml": {
-    "mtime": 1792999438.753227,
-    "seen": 1792999565.2427485,
-    "ast_hash": "90753eac0dfaf5345e759a7f4384f0c8",
+    "mtime": 1793001373.2449415,
+    "seen": 1793001766.5689495,
+    "ast_hash": "a803ebd2935d0036f81bcbd3c3c92c7d",
     "semantic_hash": ""
   },
   "MainWindow.xaml.cs": {

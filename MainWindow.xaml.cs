@@ -201,7 +201,7 @@ public partial class MainWindow : Window
         {
             MemoryDisplayMode.Percentage => $"{vramPct:0} %",
             MemoryDisplayMode.Megabytes => $"{(vramUsedMb ?? 0):0} MB / {vramTotalMb:0} MB ({vramPct:0}%)",
-            _ => $"{vramUsedGb:0.1} GB / {vramTotalGb:0.1} GB ({vramPct:0}%)"
+            _ => $"{vramUsedGb:0.0} GB / {vramTotalGb:0.0} GB ({vramPct:0}%)"
         };
 
         float ramPct = smoothed.RamPct ?? 0;
@@ -213,7 +213,7 @@ public partial class MainWindow : Window
         {
             MemoryDisplayMode.Percentage => $"{ramPct:0} %",
             MemoryDisplayMode.Megabytes => $"{(ramUsedGb * 1024):0} MB / {(ramTotalGb * 1024):0} MB ({ramPct:0}%)",
-            _ => $"{ramUsedGb:0.1} GB / {ramTotalGb:0.1} GB ({ramPct:0}%)"
+            _ => $"{ramUsedGb:0.0} GB / {ramTotalGb:0.0} GB ({ramPct:0}%)"
         };
 
         // 5. Atualizar gravação de sessão se estiver ativa
@@ -370,7 +370,8 @@ public partial class MainWindow : Window
             string fileName = $"Relatorio_{gameName}_{DateTime.Now:yyyyMMdd_HHmmss}.html";
             string fullPath = Path.Combine(reportsDir, fileName);
 
-            string ramInfo = $"{(_monitor.RamTotalGb ?? SensorMonitor.GetSystemTotalRamGb()):0.1} GB";
+            float ramTotal = _monitor.RamTotalGb ?? SensorMonitor.GetSystemTotalRamGb();
+            string ramInfo = (ramTotal % 1 == 0) ? $"{ramTotal:0} GB" : $"{ramTotal:0.0} GB";
             HtmlReportExporter.GenerateHtmlReport(_lastFinishedSession, _cpuName, _gpuName, fullPath, ramInfo);
 
             TxtExportStatus.Text = $"✓ Relatório gerado com sucesso: {fullPath}";

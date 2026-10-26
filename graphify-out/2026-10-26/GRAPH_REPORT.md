@@ -1,9 +1,9 @@
 # Graph Report - GameBottleneckDetector  (2026-10-26)
 
 ## Corpus Check
-- 11 files · ~7,971 words
+- 11 files · ~7,978 words
 - Verdict: corpus is large enough that graph structure adds value.
-- Unclassified: 2 file(s) not represented in the graph (top: (none) 1, .manifest 1)
+- Unclassified: 3 file(s) not represented in the graph (top: (none) 1, .ico 1, .manifest 1)
 
 ## Summary
 - 243 nodes · 395 edges · 10 communities (9 shown, 1 thin omitted)
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `b498730a`
+- Built from commit: `b27611ed`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
