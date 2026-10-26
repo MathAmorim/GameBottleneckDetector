@@ -259,7 +259,8 @@ public static class HtmlReportExporter
                 Limiter.Ram => "#bc8cff",
                 _ => "#58a6ff"
             };
-            sb.Append($@"<div class=""dist-segment"" style=""width: {pct:0.0}%; background: {color};"" title=""{BottleneckAnalyzer.Title(lim)}: {pct:0.0}%"">{pct:0}%</div>");
+            string pctCss = pct.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture);
+            sb.Append($@"<div class=""dist-segment"" style=""width: {pctCss}%; flex: {pctCss} 0 auto; background: {color};"" title=""{BottleneckAnalyzer.Title(lim)}: {pct:0.0}%"">{pct:0}%</div>");
         }
 
         sb.Append(@"</div>
@@ -284,7 +285,7 @@ public static class HtmlReportExporter
         <p><strong>3. Otimização de Gráficos:</strong> " + (vramFull ? "Mantenha a qualidade das texturas no Médio para não ultrapassar a VRAM de 4GB." : "Ajuste configurações que pesam na CPU (distância de visão, densidade de NPCs/multidões) para aliviar o i7-7700HQ.") + @"</p>
     </div>
 
-    <div class=""section-title"">Leituras Detalhadas Segundo a Segundo ({samples.Count} Amostras)</div>
+    <div class=""section-title"">Leituras Detalhadas Segundo a Segundo (" + samples.Count + @" Amostras)</div>
     <div class=""table-wrap"">
         <table>
             <thead>
