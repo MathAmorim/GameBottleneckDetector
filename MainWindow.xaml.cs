@@ -14,19 +14,25 @@ public partial class MainWindow : Window
     private readonly FrameMonitor _frameMonitor;
     private readonly BottleneckSmoother _smoother;
     private readonly DispatcherTimer _timer;
+    private readonly AppSettings _settings;
 
     private BottleneckSession? _session;
     private BottleneckSession? _lastFinishedSession;
     private string _cpuName = "Intel Core i7-7700HQ";
     private string _gpuName = "NVIDIA GeForce GTX 1050 Ti";
+    private bool _initializingSettings = true;
 
     public MainWindow()
     {
         InitializeComponent();
 
+        _settings = AppSettings.Load();
         _monitor = new SensorMonitor();
         _frameMonitor = new FrameMonitor();
         _smoother = new BottleneckSmoother();
+
+        // Aplicar preferências nos RadioButtons de configuração
+        LoadSettingsUi();
 
         // Verificar Admin
         bool isAdmin = SensorMonitor.IsElevated;
@@ -47,6 +53,60 @@ public partial class MainWindow : Window
             _frameMonitor.Dispose();
             _monitor.Dispose();
         };
+    }
+
+    private void LoadSettingsUi()
+    {
+        _initializingSettings = true;
+        switch (_settings.RamDisplayMode)
+        {
+            case MemoryDisplayMode.Percentage: RbRamPct.IsChecked = true; break;
+            case MemoryDisplayMode.Megabytes: RbRamMb.IsChecked = true; break;
+            default: RbRamGb.IsChecked = true; break;
+        }
+
+        switch (_settings.VramDisplayMode)
+        {
+            case MemoryDisplayMode.Percentage: RbVramPct.IsChecked = true; break;
+            case MemoryDisplayMode.Megabytes: RbVramMb.IsChecked = true; break;
+            default: RbVramGb.IsChecked = true; break;
+        }
+        _initializingSettings = false;
+    }
+
+    private void TabBtn_Checked(object sender, RoutedEventArgs e)
+    {
+        if (TabContentDetector == null || TabContentSettings == null) return;
+
+        if (TabBtnDetector.IsChecked == true)
+        {
+            TabContentDetector.Visibility = Visibility.Visible;
+            TabContentSettings.Visibility = Visibility.Collapsed;
+            TabBtnDetector.Foreground = (Brush)new BrushConverter().ConvertFromString("#F0F6FC")!;
+            TabBtnSettings.Foreground = (Brush)new BrushConverter().ConvertFromString("#8B949E")!;
+        }
+        else
+        {
+            TabContentDetector.Visibility = Visibility.Collapsed;
+            TabContentSettings.Visibility = Visibility.Visible;
+            TabBtnDetector.Foreground = (Brush)new BrushConverter().ConvertFromString("#8B949E")!;
+            TabBtnSettings.Foreground = (Brush)new BrushConverter().ConvertFromString("#F0F6FC")!;
+        }
+    }
+
+    private void SettingChanged(object sender, RoutedEventArgs e)
+    {
+        if (_initializingSettings) return;
+
+        if (RbRamPct.IsChecked == true) _settings.RamDisplayMode = MemoryDisplayMode.Percentage;
+        else if (RbRamMb.IsChecked == true) _settings.RamDisplayMode = MemoryDisplayMode.Megabytes;
+        else _settings.RamDisplayMode = MemoryDisplayMode.Gigabytes;
+
+        if (RbVramPct.IsChecked == true) _settings.VramDisplayMode = MemoryDisplayMode.Percentage;
+        else if (RbVramMb.IsChecked == true) _settings.VramDisplayMode = MemoryDisplayMode.Megabytes;
+        else _settings.VramDisplayMode = MemoryDisplayMode.Gigabytes;
+
+        _settings.Save();
     }
 
     private async Task InitHardwareAsync()
@@ -96,7 +156,7 @@ public partial class MainWindow : Window
             _ => "ESTÁVEL"
         };
 
-        // 2. Leituras ao vivo
+        // 2. Leituras ao vivo: Cargas
         float gpuLoad = smoothed.GpuLoad ?? 0;
         TxtGpuLoad.Text = $"{gpuLoad:0} %";
         BarGpuLoad.Value = Math.Clamp(gpuLoad, 0, 100);
@@ -108,31 +168,65 @@ public partial class MainWindow : Window
         if (smoothed.CpuMaxCore != null)
         {
             TxtCpuCore.Text = $"{smoothed.CpuMaxCore:0} %";
-            LblCpuCore.Text = !string.IsNullOrEmpty(smoothed.BusiestCore) ? $"Núcleo ({smoothed.BusiestCore})" : "Núcleo mais ocupado";
+            LblCpuCore.Text = !string.IsNullOrEmpty(smoothed.BusiestCore) ? $"Núcleo ({smoothed.BusiestCore}) ℹ️" : "Núcleo mais ocupado ℹ️";
             BarCpuCore.Value = Math.Clamp(smoothed.CpuMaxCore.Value, 0, 100);
         }
 
-        double vram = smoothed.VramPct ?? 0;
-        TxtVram.Text = $"{vram:0} %";
-        BarVram.Value = Math.Clamp(vram, 0, 100);
-
-        float ram = smoothed.RamPct ?? 0;
-        TxtRam.Text = $"{ram:0} %";
-        BarRam.Value = Math.Clamp(ram, 0, 100);
+        // 3. Leituras ao vivo: Temperaturas SEPARADAS
+        float cpuT = smoothed.CpuTemp ?? 0;
+        TxtCpuTemp.Text = cpuT > 0 ? $"{cpuT:0} °C" : "— °C";
+        BarCpuTemp.Value = Math.Clamp(cpuT, 0, 100);
+        BarCpuTemp.Foreground = (Brush)new BrushConverter().ConvertFromString(
+            cpuT >= 90 ? "#DA3633" : cpuT >= 80 ? "#D29922" : "#3FB950")!;
 
         float gpuT = smoothed.GpuTemp ?? 0;
-        float cpuT = smoothed.CpuTemp ?? 0;
-        TxtTemps.Text = $"{(gpuT > 0 ? $"{gpuT:0} °C" : "—")} / {(cpuT > 0 ? $"{cpuT:0} °C" : "—")}";
-        BarTemps.Value = Math.Clamp(Math.Max(gpuT, cpuT), 0, 100);
-        BarTemps.Foreground = (Brush)new BrushConverter().ConvertFromString(cpuT >= 90 ? "#DA3633" : cpuT >= 80 ? "#D29922" : "#238636")!;
+        TxtGpuTemp.Text = gpuT > 0 ? $"{gpuT:0} °C" : "— °C";
+        BarGpuTemp.Value = Math.Clamp(gpuT, 0, 100);
+        BarGpuTemp.Foreground = (Brush)new BrushConverter().ConvertFromString(
+            gpuT >= 85 ? "#DA3633" : gpuT >= 78 ? "#D29922" : "#3FB950")!;
 
-        // 3. Atualizar gravação de sessão se estiver ativa
+        // 4. Leituras ao vivo: Memórias com formatação configurável (GB / MB / %)
+        double vramPct = smoothed.VramPct ?? 0;
+        BarVram.Value = Math.Clamp(vramPct, 0, 100);
+        float? vramUsedMb = _monitor.VramUsedMb;
+        float vramTotalMb = _monitor.VramTotalMb ?? 4096f;
+        float vramUsedGb = (vramUsedMb ?? 0) / 1024f;
+        float vramTotalGb = vramTotalMb / 1024f;
+
+        TxtVram.Text = _settings.VramDisplayMode switch
+        {
+            MemoryDisplayMode.Percentage => $"{vramPct:0} %",
+            MemoryDisplayMode.Megabytes => $"{(vramUsedMb ?? 0):0} MB / {vramTotalMb:0} MB ({vramPct:0}%)",
+            _ => $"{vramUsedGb:0.1} GB / {vramTotalGb:0.1} GB ({vramPct:0}%)"
+        };
+
+        float ramPct = smoothed.RamPct ?? 0;
+        BarRam.Value = Math.Clamp(ramPct, 0, 100);
+        float ramUsedGb = _monitor.RamUsedGb ?? ((ramPct / 100f) * 16f);
+        float ramTotalGb = _monitor.RamTotalGb ?? 16f;
+
+        TxtRam.Text = _settings.RamDisplayMode switch
+        {
+            MemoryDisplayMode.Percentage => $"{ramPct:0} %",
+            MemoryDisplayMode.Megabytes => $"{(ramUsedGb * 1024):0} MB / {(ramTotalGb * 1024):0} MB ({ramPct:0}%)",
+            _ => $"{ramUsedGb:0.1} GB / {ramTotalGb:0.1} GB ({ramPct:0}%)"
+        };
+
+        // 5. Atualizar gravação de sessão se estiver ativa
         if (_session != null)
         {
             _session.Add(rawSample);
             var elapsed = DateTime.Now - _session.Start;
-            TxtSessionStatus.Text = $"Gravando: {elapsed:m\\:ss} de {_session.Duration:m\\:ss} ({_session.Count} amostras) · " +
-                                   (frames != null ? $"Jogo: {frames.ProcessName}" : "Alterne para o jogo agora");
+            string gameName = frames != null ? frames.ProcessName : "Alterne para o jogo agora";
+
+            if (_session.IsContinuous)
+            {
+                TxtSessionStatus.Text = $"🔴 Gravando sessão livre: {elapsed:m\\:ss} ({_session.Count} amostras) · Jogo: {gameName} · Clique em 'Concluir Análise' ao terminar.";
+            }
+            else
+            {
+                TxtSessionStatus.Text = $"🔴 Gravando: {elapsed:m\\:ss} de {_session.Duration:m\\:ss} ({_session.Count} amostras) · Jogo: {gameName}";
+            }
 
             if (_session.Done)
             {
@@ -145,24 +239,41 @@ public partial class MainWindow : Window
     {
         if (_session != null)
         {
-            // Cancelar
-            _session = null;
-            BtnSession.Content = "INICIAR ANÁLISE";
-            BtnSession.Style = (Style)FindResource("PrimaryButton");
-            TxtSessionStatus.Text = "Análise cancelada pelo usuário.";
+            // O usuário clicou para CONCLUIR a sessão (seja contínua ou antecipada)
+            FinishSession();
             return;
         }
 
-        int minutes = 1;
-        if (Rb3Min.IsChecked == true) minutes = 3;
-        else if (Rb5Min.IsChecked == true) minutes = 5;
-        else if (Rb10Min.IsChecked == true) minutes = 10;
+        // Iniciar nova sessão
+        TimeSpan duration = TimeSpan.FromMinutes(1);
+        if (RbContinuous.IsChecked == true) duration = TimeSpan.Zero; // Modo livre
+        else if (Rb3Min.IsChecked == true) duration = TimeSpan.FromMinutes(3);
+        else if (Rb5Min.IsChecked == true) duration = TimeSpan.FromMinutes(5);
+        else if (Rb10Min.IsChecked == true) duration = TimeSpan.FromMinutes(10);
 
-        _session = new BottleneckSession { Duration = TimeSpan.FromMinutes(minutes) };
+        _session = new BottleneckSession { Duration = duration };
         PanelResults.Visibility = Visibility.Collapsed;
-        BtnSession.Content = "CANCELAR GRAVAÇÃO";
-        BtnSession.Style = (Style)FindResource("DangerButton");
-        TxtSessionStatus.Text = $"Gravação iniciada! Alterne para o jogo e jogue pelos próximos {minutes} minuto(s)...";
+        PanelDurations.IsEnabled = false;
+
+        BtnSession.Content = "CONCLUIR ANÁLISE ↗";
+        BtnSession.Style = (Style)FindResource("SecondaryButton");
+        BtnDiscardSession.Visibility = Visibility.Visible;
+
+        TxtSessionStatus.Text = duration <= TimeSpan.Zero
+            ? "Gravação contínua iniciada! Jogue normalmente pelo tempo que desejar..."
+            : $"Gravação iniciada! Jogue normalmente pelos próximos {duration.TotalMinutes:0} minuto(s)...";
+    }
+
+    private void BtnDiscardSession_Click(object sender, RoutedEventArgs e)
+    {
+        if (_session == null) return;
+
+        _session = null;
+        PanelDurations.IsEnabled = true;
+        BtnSession.Content = "INICIAR ANÁLISE";
+        BtnSession.Style = (Style)FindResource("PrimaryButton");
+        BtnDiscardSession.Visibility = Visibility.Collapsed;
+        TxtSessionStatus.Text = "Gravação descartada sem salvar relatório.";
     }
 
     private void FinishSession()
@@ -171,8 +282,17 @@ public partial class MainWindow : Window
         _lastFinishedSession = sess;
         _session = null;
 
-        BtnSession.Content = "INICIAR NOVA ANÁLISE";
+        PanelDurations.IsEnabled = true;
+        BtnSession.Content = "INICIAR ANÁLISE";
         BtnSession.Style = (Style)FindResource("PrimaryButton");
+        BtnDiscardSession.Visibility = Visibility.Collapsed;
+
+        if (sess.Count == 0)
+        {
+            TxtSessionStatus.Text = "Análise finalizada sem amostras coletadas.";
+            return;
+        }
+
         TxtSessionStatus.Text = $"Análise finalizada com sucesso às {DateTime.Now:HH:mm:ss} ({sess.Count} amostras registradas).";
 
         var main = sess.Main ?? Limiter.Capped;

@@ -198,8 +198,9 @@ public sealed class BottleneckSession
     private readonly List<LoadSample> _samples = new();
     public DateTime Start { get; } = DateTime.Now;
     public TimeSpan Duration { get; init; }
+    public bool IsContinuous => Duration <= TimeSpan.Zero;
     public int Count => _samples.Count;
-    public bool Done => DateTime.Now - Start >= Duration;
+    public bool Done => !IsContinuous && (DateTime.Now - Start >= Duration);
     public IReadOnlyList<LoadSample> Samples => _samples;
 
     public void Add(LoadSample s) => _samples.Add(s);
