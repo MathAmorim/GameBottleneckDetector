@@ -1,0 +1,30 @@
+# Graphify Ignore Rules para GameBottleneckDetector
+# Pastas e arquivos que não devem entrar no grafo de conhecimento
+
+# Build e arquivos compilados C# / .NET
+bin/
+obj/
+publish/
+*.dll
+*.exe
+*.pdb
+*.deps.json
+*.runtimeconfig.json
+
+# IDE e ferramentas
+.vs/
+*.user
+*.suo
+
+# Controle de versão
+.git/
+.gitignore
+README.md
+# Relatórios gerados e telemetria
+Relatorios/
+*.html
+*.log
+*.tmp
+
+# Saída do Graphify
+graphify-out/
