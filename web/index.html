@@ -1,0 +1,1544 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0D1117" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" href="/icon.ico" />
+    <title>Bottleneck Detector — Segunda Tela</title>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0d1117;
+        --surface: #161b22;
+        --surface-2: #21262d;
+        --border: #30363d;
+        --text-main: #f0f6fc;
+        --text-muted: #8b949e;
+        --blue: #58a6ff;
+        --blue-active: #1f6feb;
+        --blue-subtle: #131b26;
+        --green: #3fb950;
+        --green-button: #238636;
+        --pink: #e91e63;
+        --amber: #d29922;
+        --purple: #bc8cff;
+        --red: #f85149;
+        --red-button: #da3633;
+        --red-subtle: #331a1a;
+        --stable: #607d8b;
+        --radius: 10px;
+        --safe-top: env(safe-area-inset-top, 0px);
+        --safe-right: env(safe-area-inset-right, 0px);
+        --safe-bottom: env(safe-area-inset-bottom, 0px);
+        --safe-left: env(safe-area-inset-left, 0px);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        min-height: 100%;
+        background: var(--bg);
+      }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        min-height: 100dvh;
+        background:
+          radial-gradient(circle at 50% -10%, rgba(31, 111, 235, 0.12), transparent 35%),
+          var(--bg);
+        color: var(--text-main);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -webkit-tap-highlight-color: transparent;
+        overscroll-behavior-y: none;
+      }
+
+      button,
+      a {
+        font: inherit;
+      }
+
+      button {
+        color: inherit;
+      }
+
+      button:focus-visible,
+      a:focus-visible {
+        outline: 2px solid var(--blue);
+        outline-offset: 2px;
+      }
+
+      .app-shell {
+        width: min(100%, 1280px);
+        margin: 0 auto;
+        padding:
+          calc(10px + var(--safe-top))
+          calc(12px + var(--safe-right))
+          calc(20px + var(--safe-bottom))
+          calc(12px + var(--safe-left));
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .brand {
+        display: flex;
+        min-width: 0;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .brand-mark {
+        display: grid;
+        flex: 0 0 38px;
+        height: 38px;
+        place-items: center;
+        border: 1px solid rgba(88, 166, 255, 0.28);
+        border-radius: 9px;
+        background: var(--blue-subtle);
+        color: var(--blue);
+        font-size: 17px;
+      }
+
+      .brand-copy {
+        min-width: 0;
+      }
+
+      .brand-title {
+        overflow: hidden;
+        margin: 0;
+        font-size: 14px;
+        font-weight: 750;
+        letter-spacing: -0.01em;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .brand-subtitle {
+        overflow: hidden;
+        margin: 3px 0 0;
+        color: var(--text-muted);
+        font-size: 10px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .top-actions {
+        display: flex;
+        flex: 0 0 auto;
+        align-items: center;
+        gap: 7px;
+      }
+
+      .icon-button {
+        display: grid;
+        width: 44px;
+        min-height: 44px;
+        place-items: center;
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        background: var(--surface);
+        cursor: pointer;
+      }
+
+      .icon-button.is-active {
+        border-color: var(--blue);
+        background: var(--blue-subtle);
+        color: var(--blue);
+      }
+
+      .connection-badge {
+        display: flex;
+        min-height: 36px;
+        align-items: center;
+        gap: 7px;
+        padding: 0 10px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: var(--surface);
+        color: var(--text-muted);
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .connection-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--amber);
+        box-shadow: 0 0 0 0 rgba(210, 153, 34, 0.4);
+      }
+
+      .connection-badge.live .connection-dot {
+        background: var(--green);
+        animation: connectionPulse 1.8s infinite;
+      }
+
+      .connection-badge.offline .connection-dot {
+        background: var(--red);
+      }
+
+      @keyframes connectionPulse {
+        70% {
+          box-shadow: 0 0 0 6px rgba(63, 185, 80, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(63, 185, 80, 0);
+        }
+      }
+
+      .dashboard {
+        display: grid;
+        gap: 10px;
+      }
+
+      .card {
+        overflow: hidden;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: rgba(22, 27, 34, 0.96);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+      }
+
+      .hero {
+        position: relative;
+        padding: 14px;
+      }
+
+      .hero::before {
+        position: absolute;
+        inset: 0 0 auto;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(88, 166, 255, 0.7), transparent);
+        content: "";
+      }
+
+      .eyebrow-row,
+      .sensor-heading,
+      .session-heading,
+      .result-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .eyebrow {
+        color: var(--text-muted);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.11em;
+      }
+
+      .status-pill {
+        display: inline-flex;
+        min-height: 28px;
+        align-items: center;
+        gap: 6px;
+        padding: 0 9px;
+        border: 1px solid color-mix(in srgb, var(--pill-color, var(--stable)) 65%, transparent);
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--pill-color, var(--stable)) 17%, transparent);
+        color: var(--pill-color, var(--stable));
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.03em;
+        text-align: center;
+      }
+
+      .hero-metrics {
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) minmax(88px, 0.65fr);
+        align-items: end;
+        gap: 14px;
+        margin-top: 14px;
+      }
+
+      .game-name {
+        overflow: hidden;
+        margin-bottom: 3px;
+        color: var(--text-muted);
+        font-size: 12px;
+        font-weight: 650;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .fps-line,
+      .metric-value,
+      .session-status,
+      .result-summary {
+        font-variant-numeric: tabular-nums;
+      }
+
+      .fps-line {
+        display: flex;
+        align-items: baseline;
+        gap: 7px;
+      }
+
+      .fps-value {
+        font-size: clamp(48px, 16vw, 78px);
+        font-weight: 800;
+        letter-spacing: -0.06em;
+        line-height: 0.95;
+      }
+
+      .fps-unit {
+        color: var(--text-muted);
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+      }
+
+      .low-block {
+        padding-left: 14px;
+        border-left: 1px solid var(--border);
+      }
+
+      .low-label {
+        display: block;
+        color: var(--text-muted);
+        font-size: 10px;
+        font-weight: 750;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+      }
+
+      .low-value {
+        display: block;
+        margin-top: 4px;
+        font-size: clamp(24px, 8vw, 36px);
+        font-weight: 780;
+        letter-spacing: -0.035em;
+        line-height: 1;
+      }
+
+      .diagnosis {
+        margin-top: 15px;
+        padding: 12px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--bg);
+      }
+
+      .diagnosis-title {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 750;
+      }
+
+      .diagnosis-advice {
+        margin: 5px 0 0;
+        color: var(--text-muted);
+        font-size: 11px;
+        line-height: 1.45;
+      }
+
+      .sensors-grid {
+        display: grid;
+        gap: 10px;
+      }
+
+      .sensor-card {
+        padding: 13px;
+      }
+
+      .sensor-title {
+        margin: 0;
+        font-size: 10px;
+        font-weight: 850;
+        letter-spacing: 0.1em;
+      }
+
+      .sensor-title.cpu {
+        color: var(--blue);
+      }
+
+      .sensor-title.gpu {
+        color: var(--green);
+      }
+
+      .sensor-title.ram {
+        color: var(--purple);
+      }
+
+      .sensor-chip {
+        display: inline-flex;
+        min-height: 25px;
+        align-items: center;
+        gap: 5px;
+        padding: 0 7px;
+        border-radius: 6px;
+        background: var(--surface-2);
+        color: var(--text-muted);
+        font-size: 9px;
+        font-weight: 700;
+      }
+
+      .metric {
+        margin-top: 13px;
+      }
+
+      .metric:first-of-type {
+        margin-top: 16px;
+      }
+
+      .metric-row {
+        display: flex;
+        min-height: 22px;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 7px;
+      }
+
+      .metric-label {
+        display: flex;
+        min-width: 0;
+        align-items: center;
+        gap: 7px;
+        color: var(--text-muted);
+        font-size: 11px;
+      }
+
+      .metric-label i {
+        width: 13px;
+        color: var(--text-muted);
+        text-align: center;
+      }
+
+      .metric-label span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .metric-value {
+        flex: 0 0 auto;
+        font-size: 13px;
+        font-weight: 780;
+        letter-spacing: -0.01em;
+      }
+
+      .metric-value.long {
+        font-size: 11px;
+      }
+
+      .progress-track {
+        overflow: hidden;
+        height: 7px;
+        border-radius: 999px;
+        background: var(--surface-2);
+      }
+
+      .progress-fill {
+        width: 0;
+        height: 100%;
+        border-radius: inherit;
+        background: var(--bar-color, var(--blue));
+        box-shadow: 0 0 12px color-mix(in srgb, var(--bar-color, var(--blue)) 35%, transparent);
+        transition:
+          width 450ms ease,
+          background-color 250ms ease;
+      }
+
+      .ram-card .metric {
+        margin-top: 16px;
+      }
+
+      .session-card {
+        padding: 14px;
+      }
+
+      .section-title {
+        margin: 0;
+        font-size: 13px;
+        font-weight: 780;
+      }
+
+      .section-icon {
+        color: var(--blue);
+      }
+
+      .session-status {
+        margin: 10px 0 13px;
+        color: var(--text-muted);
+        font-size: 11px;
+        line-height: 1.45;
+      }
+
+      .duration-label {
+        margin: 0 0 7px;
+        color: var(--text-muted);
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+      }
+
+      .duration-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 6px;
+      }
+
+      .duration-option {
+        display: flex;
+        min-width: 0;
+        min-height: 50px;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        padding: 5px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--surface);
+        color: var(--text-muted);
+        cursor: pointer;
+        font-size: 10px;
+        font-weight: 720;
+      }
+
+      .duration-option:hover {
+        background: var(--surface-2);
+      }
+
+      .duration-option.selected {
+        border-color: var(--blue);
+        background: var(--blue-subtle);
+        color: var(--text-main);
+      }
+
+      .duration-check {
+        display: grid;
+        flex: 0 0 18px;
+        width: 18px;
+        height: 18px;
+        place-items: center;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        background: var(--surface-2);
+        color: transparent;
+        font-size: 9px;
+      }
+
+      .duration-option.selected .duration-check {
+        border-color: var(--blue-active);
+        background: var(--blue-active);
+        color: #fff;
+      }
+
+      .duration-option:disabled {
+        cursor: not-allowed;
+        opacity: 0.55;
+      }
+
+      .actions {
+        display: grid;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .action-button {
+        min-height: 52px;
+        padding: 0 15px;
+        border: 1px solid transparent;
+        border-radius: 9px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 850;
+        letter-spacing: 0.035em;
+        transition:
+          filter 150ms ease,
+          transform 100ms ease,
+          box-shadow 150ms ease;
+      }
+
+      .action-button:active {
+        transform: scale(0.985);
+      }
+
+      .action-button:hover {
+        filter: brightness(1.1);
+      }
+
+      .action-button.primary {
+        border-color: #2ea043;
+        background: var(--green-button);
+      }
+
+      .action-button.mark {
+        min-height: 62px;
+        border-color: #e3a72d;
+        background: var(--amber);
+        color: #0d1117;
+        box-shadow: 0 0 0 0 rgba(210, 153, 34, 0.28);
+        font-size: 13px;
+      }
+
+      .action-button.mark.marked {
+        animation: markerFeedback 500ms ease-out;
+      }
+
+      @keyframes markerFeedback {
+        0% {
+          box-shadow: 0 0 0 0 rgba(210, 153, 34, 0.55);
+        }
+        100% {
+          box-shadow: 0 0 0 16px rgba(210, 153, 34, 0);
+        }
+      }
+
+      .secondary-actions {
+        display: grid;
+        grid-template-columns: 1.45fr 1fr;
+        gap: 8px;
+      }
+
+      .action-button.stop {
+        border-color: var(--blue);
+        background: var(--surface-2);
+      }
+
+      .action-button.discard {
+        border-color: var(--red-button);
+        background: var(--red-button);
+      }
+
+      .results-card {
+        display: none;
+        padding: 14px;
+        border-color: rgba(88, 166, 255, 0.45);
+      }
+
+      .results-card.visible {
+        display: block;
+        animation: resultIn 260ms ease-out;
+      }
+
+      @keyframes resultIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+      }
+
+      .result-heading .section-icon {
+        display: grid;
+        width: 28px;
+        height: 28px;
+        place-items: center;
+        border-radius: 7px;
+        background: var(--blue-subtle);
+      }
+
+      .thermal-alert {
+        display: none;
+        margin-top: 12px;
+        padding: 10px;
+        border: 1px solid var(--red-button);
+        border-radius: 8px;
+        background: var(--red-subtle);
+        color: var(--red);
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1.45;
+      }
+
+      .thermal-alert.visible {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      .result-summary {
+        margin: 12px 0;
+        color: var(--text-muted);
+        font-size: 11px;
+        line-height: 1.55;
+      }
+
+      .distribution-title {
+        margin: 0 0 10px;
+        color: var(--text-main);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+      }
+
+      .distribution-item + .distribution-item {
+        margin-top: 11px;
+      }
+
+      .distribution-item .metric-row {
+        margin-bottom: 6px;
+      }
+
+      .distribution-label {
+        color: var(--text-muted);
+        font-size: 10px;
+      }
+
+      .result-advice {
+        margin: 14px 0;
+        padding: 11px;
+        border-left: 3px solid var(--blue);
+        background: var(--blue-subtle);
+        color: var(--text-main);
+        font-size: 11px;
+        line-height: 1.5;
+      }
+
+      .report-link {
+        display: flex;
+        min-height: 52px;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border: 1px solid var(--blue);
+        border-radius: 9px;
+        background: var(--blue-active);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 850;
+        letter-spacing: 0.025em;
+        text-align: center;
+        text-decoration: none;
+      }
+
+      .toast {
+        position: fixed;
+        z-index: 50;
+        right: calc(14px + var(--safe-right));
+        bottom: calc(18px + var(--safe-bottom));
+        left: calc(14px + var(--safe-left));
+        display: flex;
+        max-width: 420px;
+        min-height: 50px;
+        margin: auto;
+        align-items: center;
+        gap: 9px;
+        padding: 11px 14px;
+        border: 1px solid rgba(63, 185, 80, 0.55);
+        border-radius: 9px;
+        background: #17261b;
+        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+        color: var(--text-main);
+        font-size: 12px;
+        font-weight: 700;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(18px);
+        transition:
+          opacity 180ms ease,
+          transform 180ms ease;
+      }
+
+      .toast.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .toast.error {
+        border-color: var(--red-button);
+        background: var(--red-subtle);
+      }
+
+      .demo-note {
+        display: none;
+        margin: -2px 0 10px;
+        color: var(--amber);
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-align: right;
+      }
+
+      .demo-note.visible {
+        display: block;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      @media (min-width: 560px) {
+        .app-shell {
+          padding-right: calc(18px + var(--safe-right));
+          padding-left: calc(18px + var(--safe-left));
+        }
+
+        .brand-title {
+          font-size: 15px;
+        }
+
+        .brand-subtitle {
+          font-size: 11px;
+        }
+
+        .hero {
+          padding: 16px;
+        }
+
+        .sensors-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .ram-card {
+          grid-column: 1 / -1;
+        }
+
+        .duration-option {
+          gap: 7px;
+          font-size: 11px;
+        }
+      }
+
+      @media (orientation: landscape) and (min-width: 680px) {
+        .app-shell {
+          padding-top: calc(8px + var(--safe-top));
+        }
+
+        .topbar {
+          margin-bottom: 8px;
+        }
+
+        .dashboard {
+          grid-template-columns: minmax(280px, 0.85fr) minmax(390px, 1.4fr);
+          align-items: start;
+          gap: 8px;
+        }
+
+        .hero,
+        .session-card,
+        .results-card {
+          grid-column: 1;
+        }
+
+        .sensors-grid {
+          grid-column: 2;
+          grid-row: 1 / span 3;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 8px;
+        }
+
+        .sensor-card {
+          padding: 12px;
+        }
+
+        .ram-card {
+          grid-column: 1 / -1;
+        }
+
+        .fps-value {
+          font-size: clamp(48px, 7vw, 72px);
+        }
+
+        .low-value {
+          font-size: clamp(24px, 3.6vw, 34px);
+        }
+
+        .diagnosis {
+          margin-top: 12px;
+          padding: 10px;
+        }
+
+        .duration-option {
+          min-height: 48px;
+        }
+      }
+
+      @media (orientation: landscape) and (min-width: 980px) {
+        .dashboard {
+          grid-template-columns: minmax(320px, 0.9fr) minmax(550px, 1.55fr);
+        }
+
+        .sensors-grid {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .ram-card {
+          grid-column: auto;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true"><i class="fa-solid fa-gauge-high"></i></div>
+          <div class="brand-copy">
+            <h1 class="brand-title">Bottleneck Detector</h1>
+            <p class="brand-subtitle" id="txt-hardware-info">Detectando hardware...</p>
+          </div>
+        </div>
+        <div class="top-actions">
+          <button
+            class="icon-button"
+            id="btn-wake-lock"
+            type="button"
+            aria-label="Manter tela acesa e entrar em tela cheia"
+            title="Tela sempre acesa"
+          >
+            <i class="fa-regular fa-sun"></i>
+          </button>
+          <div class="connection-badge" id="badge-conn" role="status" aria-live="polite">
+            <span class="connection-dot"></span>
+            <span id="txt-conn">Conectando...</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="demo-note" id="demo-note">
+        <i class="fa-solid fa-flask"></i> MODO DEMO — aguardando PC
+      </div>
+
+      <section class="dashboard" aria-label="Painel de telemetria">
+        <article class="card hero">
+          <div class="eyebrow-row">
+            <span class="eyebrow">AGORA (MÉDIA MÓVEL 5S)</span>
+            <span class="status-pill" id="pill-status">
+              <i class="fa-solid fa-wave-square"></i>
+              <span id="txt-pill-status">ESTÁVEL</span>
+            </span>
+          </div>
+
+          <div class="hero-metrics">
+            <div>
+              <div class="game-name" id="txt-game">Nenhum jogo 3D em foco</div>
+              <div class="fps-line">
+                <span class="fps-value" id="txt-fps">0</span>
+                <span class="fps-unit">FPS</span>
+              </div>
+            </div>
+            <div class="low-block">
+              <span class="low-label">1% Low</span>
+              <span class="low-value" id="txt-low1">0</span>
+            </div>
+          </div>
+
+          <div class="diagnosis">
+            <h2 class="diagnosis-title" id="txt-live-title">Aguardando telemetria</h2>
+            <p class="diagnosis-advice" id="txt-live-advice">
+              Conecte este dispositivo ao painel do PC para iniciar o diagnóstico ao vivo.
+            </p>
+          </div>
+        </article>
+
+        <section class="sensors-grid" aria-label="Sensores ao vivo">
+          <article class="card sensor-card">
+            <div class="sensor-heading">
+              <h2 class="sensor-title cpu">PROCESSADOR (CPU)</h2>
+              <span class="sensor-chip"><i class="fa-solid fa-microchip"></i> AO VIVO</span>
+            </div>
+
+            <div class="metric">
+              <div class="metric-row">
+                <div class="metric-label">
+                  <i class="fa-solid fa-microchip"></i><span>Carga total</span>
+                </div>
+                <span class="metric-value" id="txt-cpu-load">0 %</span>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill" id="bar-cpu-load" style="--bar-color: #58a6ff"></div>
+              </div>
+            </div>
+
+            <div class="metric">
+              <div class="metric-row">
+                <div class="metric-label">
+                  <i class="fa-solid fa-temperature-half"></i><span>Temperatura</span>
+                </div>
+                <span class="metric-value" id="txt-cpu-temp">— °C</span>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill" id="bar-cpu-temp" style="--bar-color: #3fb950"></div>
+              </div>
+            </div>
+
+            <div class="metric">
+              <div class="metric-row">
+                <div class="metric-label">
+                  <i class="fa-solid fa-bolt"></i><span id="lbl-cpu-core">Núcleo mais ocupado</span>
+                </div>
+                <span class="metric-value" id="txt-cpu-core">0 %</span>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill" id="bar-cpu-core" style="--bar-color: #e91e63"></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="card sensor-card">
+            <div class="sensor-heading">
+              <h2 class="sensor-title gpu">PLACA DE VÍDEO (GPU)</h2>
+              <span class="sensor-chip"><i class="fa-solid fa-display"></i> AO VIVO</span>
+            </div>
+
+            <div class="metric">
+              <div class="metric-row">
+                <div class="metric-label">
+                  <i class="fa-solid fa-chart-simple"></i><span>Carga da GPU</span>
+                </div>
+                <span class="metric-value" id="txt-gpu-load">0 %</span>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill" id="bar-gpu-load" style="--bar-color: #3fb950"></div>
+              </div>
+            </div>
+
+            <div class="metric">
+              <div class="metric-row">
+                <div class="metric-label">
+                  <i class="fa-solid fa-temperature-half"></i><span>Temperatura</span>
+                </div>
+                <span class="metric-value" id="txt-gpu-temp">— °C</span>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill" id="bar-gpu-temp" style="--bar-color: #3fb950"></div>
+              </div>
+            </div>
+
+            <div class="metric">
+              <div class="metric-row">
+                <div class="metric-label">
+                  <i class="fa-solid fa-memory"></i><span>Memória de vídeo</span>
+                </div>
+                <span class="metric-value long" id="txt-vram">0 GB / 0 GB (0%)</span>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill" id="bar-vram" style="--bar-color: #d29922"></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="card sensor-card ram-card">
+            <div class="sensor-heading">
+              <h2 class="sensor-title ram">MEMÓRIA RAM DO SISTEMA</h2>
+              <span class="sensor-chip"><i class="fa-solid fa-memory"></i> DDR</span>
+            </div>
+
+            <div class="metric">
+              <div class="metric-row">
+                <div class="metric-label">
+                  <i class="fa-solid fa-layer-group"></i><span>Memória em uso</span>
+                </div>
+                <span class="metric-value long" id="txt-ram">0 GB / 0 GB (0%)</span>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill" id="bar-ram" style="--bar-color: #bc8cff"></div>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <article class="card session-card">
+          <div class="session-heading">
+            <h2 class="section-title">
+              <i class="fa-solid fa-circle-dot section-icon"></i> Controle da sessão
+            </h2>
+            <span class="sensor-chip" id="session-chip">PRONTO</span>
+          </div>
+          <p class="session-status" id="txt-session-status">Pronto para iniciar gravação</p>
+
+          <p class="duration-label">Duração da análise</p>
+          <div class="duration-grid" id="panel-durations">
+            <button class="duration-option" type="button" data-duration="60">
+              <span class="duration-check"><i class="fa-solid fa-check"></i></span><span>1 min</span>
+            </button>
+            <button class="duration-option selected" type="button" data-duration="180">
+              <span class="duration-check"><i class="fa-solid fa-check"></i></span><span>3 min</span>
+            </button>
+            <button class="duration-option" type="button" data-duration="300">
+              <span class="duration-check"><i class="fa-solid fa-check"></i></span><span>5 min</span>
+            </button>
+            <button class="duration-option" type="button" data-duration="600">
+              <span class="duration-check"><i class="fa-solid fa-check"></i></span><span>10 min</span>
+            </button>
+            <button class="duration-option" type="button" data-duration="0">
+              <span class="duration-check"><i class="fa-solid fa-check"></i></span><span>Livre</span>
+            </button>
+          </div>
+
+          <div class="actions">
+            <button class="action-button primary" id="btn-session-start" type="button">
+              <i class="fa-solid fa-play"></i>&nbsp; INICIAR ANÁLISE
+            </button>
+
+            <div id="recording-actions" hidden>
+              <button class="action-button mark" id="btn-session-mark" type="button">
+                <i class="fa-solid fa-thumbtack"></i>&nbsp; MARCAR TRAVAMENTO (LAG)
+                <span id="txt-markers-count"></span>
+              </button>
+              <div class="secondary-actions" style="margin-top: 8px">
+                <button class="action-button stop" id="btn-session-stop" type="button">
+                  <i class="fa-solid fa-square"></i>&nbsp; CONCLUIR
+                </button>
+                <button class="action-button discard" id="btn-session-discard" type="button">
+                  <i class="fa-solid fa-trash-can"></i>&nbsp; DESCARTAR
+                </button>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card results-card" id="panel-results" aria-live="polite">
+          <div class="result-heading">
+            <h2 class="section-title" id="txt-result-title">Resultado da análise</h2>
+            <span class="section-icon"><i class="fa-solid fa-chart-pie"></i></span>
+          </div>
+
+          <div class="thermal-alert" id="box-thermal-alert">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span id="txt-thermal-alert"></span>
+          </div>
+
+          <p class="result-summary" id="txt-result-summary"></p>
+          <p class="distribution-title">Distribuição do tempo na partida (% gargalo)</p>
+          <div id="list-distribution"></div>
+          <p class="result-advice" id="txt-result-advice"></p>
+
+          <a
+            class="report-link"
+            id="btn-open-report"
+            href="/api/report/latest"
+            target="_blank"
+            rel="noopener"
+          >
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            ABRIR RELATÓRIO INTERATIVO (.HTML)
+          </a>
+        </article>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="assertive">
+      <i class="fa-solid fa-circle-check" id="toast-icon"></i>
+      <span id="toast-text"></span>
+    </div>
+
+    <script>
+      (() => {
+        "use strict";
+
+        const $ = (id) => document.getElementById(id);
+        const clamp = (value, min = 0, max = 100) =>
+          Math.min(max, Math.max(min, Number(value) || 0));
+        const text = (id, value) => {
+          const element = $(id);
+          if (element) element.textContent = value ?? "";
+        };
+        const setBar = (id, value, color) => {
+          const element = $(id);
+          if (!element) return;
+          element.style.width = `${clamp(value)}%`;
+          if (color) element.style.setProperty("--bar-color", color);
+        };
+        const validColor = (value, fallback) =>
+          typeof value === "string" && CSS.supports("color", value) ? value : fallback;
+
+        let isDemoMode = false;
+        let selectedDuration = 180;
+        let wakeLock = null;
+        let toastTimer = null;
+        let demoElapsed = 45;
+        let demoRecording = false;
+        let demoMarkers = 1;
+        let demoHasResult = false;
+
+        const demoData = () => {
+          const t = Date.now() / 1000;
+          const wave = (center, range, speed = 1) =>
+            Math.round(center + Math.sin(t * speed) * range);
+          const durationLabel =
+            selectedDuration === 0
+              ? `${Math.floor(demoElapsed / 60)}:${String(demoElapsed % 60).padStart(2, "0")}`
+              : `${Math.floor(demoElapsed / 60)}:${String(demoElapsed % 60).padStart(2, "0")} de ${Math.floor(selectedDuration / 60)}:00`;
+
+          return {
+            hardwareInfo: "Intel Core i7-7700HQ · NVIDIA GeForce GTX 1050 Ti",
+            limiter: "Gpu",
+            pillText: "GPU 100% (IDEAL)",
+            badgeColor: "#3FB950",
+            isWarningLimiter: false,
+            liveTitle: "GPU no limite (Cenário Ideal)",
+            liveAdvice:
+              "A placa de vídeo está sendo bem aproveitada. O desempenho está equilibrado para esta configuração.",
+            gameName: "cs2",
+            fps: wave(124, 7, 1.15),
+            low1Fps: wave(89, 4, 0.8),
+            cpuLoad: wave(62, 6, 0.9),
+            cpuTemp: wave(78, 2, 0.23),
+            cpuMaxCore: wave(88, 5, 1.25),
+            busiestCoreLabel: "Núcleo (núcleo 3)",
+            gpuLoad: wave(97, 2, 0.65),
+            gpuTemp: wave(74, 2, 0.32),
+            vramPct: 85,
+            vramText: "3.4 GB / 4.0 GB (85%)",
+            ramPct: 52,
+            ramText: "8.3 GB / 16.0 GB (52%)",
+            session: {
+              isRecording: demoRecording,
+              durationSeconds: selectedDuration,
+              statusText: demoRecording
+                ? `🔴 Gravando: ${durationLabel} (${demoElapsed} amostras) · Jogo: cs2`
+                : "Pronto para iniciar gravação",
+              markersCount: demoMarkers,
+            },
+            lastResult: {
+              hasResult: demoHasResult,
+              title: "Resultado: GPU no limite (Cenário Ideal)",
+              summary: "FPS médio: 120.5 · 1% Low: 84.2 · CPU máx: 82 °C · GPU máx: 75 °C",
+              thermalAlert: "",
+              advice:
+                "A GPU foi o componente limitante durante a maior parte da sessão, indicando bom aproveitamento do sistema.",
+              distribution: [
+                {
+                  label: "GPU no limite (Cenário Ideal)",
+                  pct: 78,
+                  pctText: "78 %",
+                  color: "#238636",
+                },
+                {
+                  label: "Gargalo de CPU",
+                  pct: 22,
+                  pctText: "22 %",
+                  color: "#E91E63",
+                },
+              ],
+            },
+          };
+        };
+
+        function setConnection(state) {
+          const badge = $("badge-conn");
+          badge.classList.remove("live", "offline");
+          if (state === "live") {
+            badge.classList.add("live");
+            text("txt-conn", "Ao Vivo");
+          } else {
+            badge.classList.add("offline");
+            text("txt-conn", "Reconectando...");
+          }
+        }
+
+        function updateTemperature(type, value) {
+          const numeric = Number(value);
+          const hasValue = Number.isFinite(numeric);
+          const isCpu = type === "cpu";
+          const yellowAt = isCpu ? 80 : 78;
+          const redAt = isCpu ? 90 : 85;
+          const color = !hasValue
+            ? "#3FB950"
+            : numeric >= redAt
+              ? "#DA3633"
+              : numeric >= yellowAt
+                ? "#D29922"
+                : "#3FB950";
+
+          text(`txt-${type}-temp`, hasValue ? `${Math.round(numeric)} °C` : "— °C");
+          setBar(`bar-${type}-temp`, hasValue ? numeric : 0, color);
+        }
+
+        function updateSession(session = {}) {
+          const isRecording = Boolean(session.isRecording);
+          const duration = Number(session.durationSeconds);
+          if (isRecording && Number.isFinite(duration)) {
+            selectedDuration = duration;
+            document.querySelectorAll(".duration-option").forEach((button) => {
+              button.classList.toggle("selected", Number(button.dataset.duration) === duration);
+            });
+          }
+
+          text(
+            "txt-session-status",
+            session.statusText ||
+              (isRecording ? "Gravando sessão..." : "Pronto para iniciar gravação"),
+          );
+          text("session-chip", isRecording ? "GRAVANDO" : "PRONTO");
+          $("session-chip").style.color = isRecording ? "#F85149" : "";
+          $("btn-session-start").hidden = isRecording;
+          $("recording-actions").hidden = !isRecording;
+          document.querySelectorAll(".duration-option").forEach((button) => {
+            button.disabled = isRecording;
+          });
+
+          const count = Math.max(0, Number(session.markersCount) || 0);
+          text("txt-markers-count", count ? ` · ${count}` : "");
+        }
+
+        function updateResults(result = {}) {
+          const panel = $("panel-results");
+          const hasResult = Boolean(result.hasResult);
+          panel.classList.toggle("visible", hasResult);
+          if (!hasResult) return;
+
+          text("txt-result-title", result.title || "Resultado da análise");
+          text("txt-result-summary", result.summary || "");
+          text("txt-result-advice", result.advice || "");
+
+          const thermalText = result.thermalAlert || result.thermalAlertText || "";
+          text("txt-thermal-alert", thermalText);
+          $("box-thermal-alert").classList.toggle("visible", Boolean(thermalText));
+
+          const list = $("list-distribution");
+          list.replaceChildren();
+          (Array.isArray(result.distribution) ? result.distribution : []).forEach((item) => {
+            const wrapper = document.createElement("div");
+            wrapper.className = "distribution-item";
+
+            const row = document.createElement("div");
+            row.className = "metric-row";
+            const label = document.createElement("span");
+            label.className = "distribution-label";
+            label.textContent = item.label || "Estado";
+            const value = document.createElement("span");
+            value.className = "metric-value";
+            value.textContent = item.pctText || `${clamp(item.pct)} %`;
+            row.append(label, value);
+
+            const track = document.createElement("div");
+            track.className = "progress-track";
+            const fill = document.createElement("div");
+            fill.className = "progress-fill";
+            fill.style.width = `${clamp(item.pct)}%`;
+            fill.style.setProperty("--bar-color", validColor(item.color, "#607D8B"));
+            track.append(fill);
+            wrapper.append(row, track);
+            list.append(wrapper);
+          });
+        }
+
+        window.updateDashboard = function updateDashboard(data = {}) {
+          text("txt-hardware-info", data.hardwareInfo || "Hardware não identificado");
+          text("txt-pill-status", data.pillText || "ESTÁVEL");
+          text("txt-game", data.gameName || "Nenhum jogo 3D em foco");
+          text("txt-fps", Math.max(0, Math.round(Number(data.fps) || 0)));
+          text("txt-low1", Math.max(0, Math.round(Number(data.low1Fps) || 0)));
+          text("txt-live-title", data.liveTitle || "Monitorando sistema");
+          text("txt-live-advice", data.liveAdvice || "Aguardando dados suficientes para diagnóstico.");
+
+          const pillColor = validColor(
+            data.badgeColor,
+            data.isWarningLimiter ? "#F85149" : "#607D8B",
+          );
+          $("pill-status").style.setProperty("--pill-color", pillColor);
+
+          text("txt-cpu-load", `${Math.round(clamp(data.cpuLoad))} %`);
+          setBar("bar-cpu-load", data.cpuLoad, "#58A6FF");
+          updateTemperature("cpu", data.cpuTemp);
+          text("lbl-cpu-core", data.busiestCoreLabel || "Núcleo mais ocupado");
+          text("txt-cpu-core", `${Math.round(clamp(data.cpuMaxCore))} %`);
+          setBar("bar-cpu-core", data.cpuMaxCore, "#E91E63");
+
+          text("txt-gpu-load", `${Math.round(clamp(data.gpuLoad))} %`);
+          setBar("bar-gpu-load", data.gpuLoad, "#3FB950");
+          updateTemperature("gpu", data.gpuTemp);
+          text("txt-vram", data.vramText || `${Math.round(clamp(data.vramPct))} %`);
+          setBar("bar-vram", data.vramPct, "#D29922");
+          text("txt-ram", data.ramText || `${Math.round(clamp(data.ramPct))} %`);
+          setBar("bar-ram", data.ramPct, "#BC8CFF");
+
+          updateSession(data.session);
+          updateResults(data.lastResult);
+        };
+
+        function showToast(message, isError = false) {
+          clearTimeout(toastTimer);
+          text("toast-text", message);
+          $("toast").classList.toggle("error", isError);
+          $("toast-icon").className = isError
+            ? "fa-solid fa-circle-exclamation"
+            : "fa-solid fa-circle-check";
+          $("toast").classList.add("visible");
+          toastTimer = setTimeout(() => $("toast").classList.remove("visible"), 2600);
+        }
+
+        function enableDemo() {
+          isDemoMode = true;
+          setConnection("offline");
+          $("demo-note").classList.add("visible");
+          window.updateDashboard(demoData());
+        }
+
+        async function pollTelemetry() {
+          try {
+            const response = await fetch("/api/telemetry", {
+              headers: { Accept: "application/json" },
+              cache: "no-store",
+              signal: AbortSignal.timeout(850),
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const data = await response.json();
+            isDemoMode = false;
+            setConnection("live");
+            $("demo-note").classList.remove("visible");
+            window.updateDashboard(data);
+          } catch {
+            enableDemo();
+          }
+        }
+
+        async function apiAction(path, body) {
+          if (isDemoMode) return true;
+          try {
+            const response = await fetch(path, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: body ? JSON.stringify(body) : undefined,
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return true;
+          } catch {
+            showToast("Não foi possível enviar o comando ao PC.", true);
+            return false;
+          }
+        }
+
+        $("panel-durations").addEventListener("click", (event) => {
+          const button = event.target.closest(".duration-option");
+          if (!button || button.disabled) return;
+          selectedDuration = Number(button.dataset.duration);
+          document.querySelectorAll(".duration-option").forEach((item) => {
+            item.classList.toggle("selected", item === button);
+          });
+        });
+
+        $("btn-session-start").addEventListener("click", async () => {
+          if (!(await apiAction("/api/session/start", { durationSeconds: selectedDuration }))) return;
+          if (isDemoMode) {
+            demoRecording = true;
+            demoElapsed = 0;
+            demoMarkers = 0;
+            demoHasResult = false;
+            window.updateDashboard(demoData());
+          }
+          showToast("Análise iniciada. Boa partida!");
+        });
+
+        $("btn-session-mark").addEventListener("click", async () => {
+          const button = $("btn-session-mark");
+          button.classList.remove("marked");
+          void button.offsetWidth;
+          button.classList.add("marked");
+          if (!(await apiAction("/api/session/mark"))) return;
+          if (isDemoMode) {
+            demoMarkers += 1;
+            window.updateDashboard(demoData());
+          }
+          showToast("Travamento marcado no gráfico!");
+        });
+
+        $("btn-session-stop").addEventListener("click", async () => {
+          if (!(await apiAction("/api/session/stop"))) return;
+          if (isDemoMode) {
+            demoRecording = false;
+            demoHasResult = true;
+            window.updateDashboard(demoData());
+            setTimeout(
+              () => $("panel-results").scrollIntoView({ behavior: "smooth", block: "nearest" }),
+              100,
+            );
+          }
+          showToast("Análise concluída e relatório gerado.");
+        });
+
+        $("btn-session-discard").addEventListener("click", async () => {
+          if (!(await apiAction("/api/session/discard"))) return;
+          if (isDemoMode) {
+            demoRecording = false;
+            demoHasResult = false;
+            demoMarkers = 0;
+            window.updateDashboard(demoData());
+          }
+          showToast("Sessão descartada.");
+        });
+
+        async function toggleWakeLock() {
+          const button = $("btn-wake-lock");
+          try {
+            if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+              await document.documentElement.requestFullscreen();
+            }
+            if ("wakeLock" in navigator && !wakeLock) {
+              wakeLock = await navigator.wakeLock.request("screen");
+              wakeLock.addEventListener("release", () => {
+                wakeLock = null;
+                button.classList.remove("is-active");
+              });
+              button.classList.add("is-active");
+              showToast("Tela sempre acesa ativada.");
+            } else if (wakeLock) {
+              await wakeLock.release();
+              wakeLock = null;
+              button.classList.remove("is-active");
+              showToast("Tela sempre acesa desativada.");
+            } else {
+              button.classList.toggle("is-active", Boolean(document.fullscreenElement));
+              showToast("Tela cheia ativada. Wake Lock não disponível neste navegador.");
+            }
+          } catch {
+            showToast("O navegador bloqueou o modo de tela sempre acesa.", true);
+          }
+        }
+
+        $("btn-wake-lock").addEventListener("click", toggleWakeLock);
+        document.addEventListener("visibilitychange", async () => {
+          if (document.visibilityState === "visible" && $("btn-wake-lock").classList.contains("is-active")) {
+            try {
+              wakeLock = await navigator.wakeLock?.request("screen");
+            } catch {
+              wakeLock = null;
+            }
+          }
+        });
+
+        window.updateDashboard(demoData());
+        pollTelemetry();
+        setInterval(() => {
+          if (isDemoMode && demoRecording) {
+            demoElapsed += 1;
+            if (selectedDuration > 0 && demoElapsed >= selectedDuration) {
+              demoRecording = false;
+              demoHasResult = true;
+            }
+          }
+          pollTelemetry();
+        }, 1000);
+      })();
+    </script>
+  </body>
+</html>

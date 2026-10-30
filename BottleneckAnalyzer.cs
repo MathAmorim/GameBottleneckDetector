@@ -196,14 +196,25 @@ public static class BottleneckAnalyzer
 public sealed class BottleneckSession
 {
     private readonly List<LoadSample> _samples = new();
+    private readonly List<int> _markerSampleIndices = new();
     public DateTime Start { get; } = DateTime.Now;
     public TimeSpan Duration { get; init; }
     public bool IsContinuous => Duration <= TimeSpan.Zero;
     public int Count => _samples.Count;
     public bool Done => !IsContinuous && (DateTime.Now - Start >= Duration);
     public IReadOnlyList<LoadSample> Samples => _samples;
+    public IReadOnlyList<int> MarkerSampleIndices => _markerSampleIndices;
 
     public void Add(LoadSample s) => _samples.Add(s);
+
+    public void AddMarker()
+    {
+        int idx = Math.Max(0, _samples.Count - 1);
+        if (_markerSampleIndices.Count == 0 || _markerSampleIndices[^1] != idx)
+        {
+            _markerSampleIndices.Add(idx);
+        }
+    }
 
     public IReadOnlyList<(Limiter Limiter, double Pct)> Distribution() =>
         _samples.GroupBy(x => x.Classify())

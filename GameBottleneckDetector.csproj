@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <Resource Include="app.ico" />
+    <EmbeddedResource Include="web\index.html" LogicalName="GameBottleneckDetector.web.index.html" />
   </ItemGroup>
 
   <ItemGroup>

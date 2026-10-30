@@ -1,0 +1,86 @@
+{
+  "App.xaml": {
+    "mtime": 1792965518.84963,
+    "seen": 1792991203.0170121,
+    "ast_hash": "4089d2aa88461136994c3dceda2982bc",
+    "semantic_hash": "4089d2aa88461136994c3dceda2982bc"
+  },
+  "App.xaml.cs": {
+    "mtime": 1792965526.1823914,
+    "seen": 1792991203.0170121,
+    "ast_hash": "c60b758f41ae6e7c4314aa8c90590935",
+    "semantic_hash": "c60b758f41ae6e7c4314aa8c90590935"
+  },
+  "BottleneckAnalyzer.cs": {
+    "mtime": 1793378567.6645122,
+    "seen": 1793379078.6394477,
+    "ast_hash": "b59c18f14526e2de0f2c077e835ee611",
+    "semantic_hash": ""
+  },
+  "FrameMonitor.cs": {
+    "mtime": 1792965438.0769107,
+    "seen": 1792991203.0170121,
+    "ast_hash": "f47ad19a92e4c4db2584a2cfb2abc9de",
+    "semantic_hash": "f47ad19a92e4c4db2584a2cfb2abc9de"
+  },
+  "GameBottleneckDetector.csproj": {
+    "mtime": 1793378505.7465265,
+    "seen": 1793379078.6394477,
+    "ast_hash": "f02a5c21fc14c70efe133586d7b946e1",
+    "semantic_hash": ""
+  },
+  "HtmlReportExporter.cs": {
+    "mtime": 1793378677.1735766,
+    "seen": 1793379078.6394477,
+    "ast_hash": "f9241b571ac23d224c85f55c9e19fd8f",
+    "semantic_hash": ""
+  },
+  "MainWindow.xaml": {
+    "mtime": 1793378931.5970507,
+    "seen": 1793379078.6394477,
+    "ast_hash": "8d723df828d5285728a792657bf213d1",
+    "semantic_hash": ""
+  },
+  "MainWindow.xaml.cs": {
+    "mtime": 1793378993.651273,
+    "seen": 1793379078.6394477,
+    "ast_hash": "e7984012fea723c04f54c97240a21c2d",
+    "semantic_hash": ""
+  },
+  "SensorMonitor.cs": {
+    "mtime": 1793245025.796073,
+    "seen": 1793379078.6394477,
+    "ast_hash": "b99dea747983d84c2c3f98f3bdb0fb0e",
+    "semantic_hash": ""
+  },
+  "SensorRow.cs": {
+    "mtime": 1792965388.8022308,
+    "seen": 1792991203.0170121,
+    "ast_hash": "8fbd88e4511c4135a80333c51ae0e0f5",
+    "semantic_hash": "8fbd88e4511c4135a80333c51ae0e0f5"
+  },
+  "AppSettings.cs": {
+    "mtime": 1793378537.488203,
+    "seen": 1793379078.6394477,
+    "ast_hash": "b5aea235cef9d0a34e47e3e9ac98746a",
+    "semantic_hash": ""
+  },
+  "AppInfo.cs": {
+    "mtime": 1793245820.3009977,
+    "seen": 1793379078.6394477,
+    "ast_hash": "e05bba40f83adc3f554bbc3e798ac3f7",
+    "semantic_hash": ""
+  },
+  "CompanionServer.cs": {
+    "mtime": 1793378836.729449,
+    "seen": 1793379078.6394477,
+    "ast_hash": "45b009513d873c8982882e1aff1e34d3",
+    "semantic_hash": ""
+  },
+  "QrCodeGenerator.cs": {
+    "mtime": 1793378762.145877,
+    "seen": 1793379078.6394477,
+    "ast_hash": "7372757d7aef7da37cc7707693efaa26",
+    "semantic_hash": ""
+  }
+}

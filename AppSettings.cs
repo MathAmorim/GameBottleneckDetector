@@ -14,6 +14,9 @@ public sealed class AppSettings
 {
     public MemoryDisplayMode RamDisplayMode { get; set; } = MemoryDisplayMode.Gigabytes;
     public MemoryDisplayMode VramDisplayMode { get; set; } = MemoryDisplayMode.Gigabytes;
+    public bool CompanionEnabled { get; set; } = true;
+    public int CompanionPort { get; set; } = 5150;
+    public int MarkerWindowSeconds { get; set; } = 30;
 
     private static readonly string SettingsFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "settings.json");
 

@@ -1,0 +1,381 @@
+{
+  "communities": {
+    "0": [
+      "binding_colorbrush",
+      "binding_label",
+      "binding_pct",
+      "binding_pcttext",
+      "mainwindow",
+      "mainwindow_lblcpucore",
+      "mainwindow_txtadminstatus",
+      "mainwindow_txtbalancedesc",
+      "mainwindow_txtcpucore",
+      "mainwindow_txtcpuload",
+      "mainwindow_txtcpushort",
+      "mainwindow_txtexportstatus",
+      "mainwindow_txtgpuload",
+      "mainwindow_txtgpushort",
+      "mainwindow_txthardwareinfo",
+      "mainwindow_txtliveadvice",
+      "mainwindow_txtlivegame",
+      "mainwindow_txtlivetitle",
+      "mainwindow_txtpillstatus",
+      "mainwindow_txtram",
+      "mainwindow_txtresultadvice",
+      "mainwindow_txtresultsummary",
+      "mainwindow_txtresulttitle",
+      "mainwindow_txtsessionstatus",
+      "mainwindow_txttemps",
+      "mainwindow_txtthermalalert",
+      "mainwindow_txtvram",
+      "mainwindow_window",
+      "xaml_textblock"
+    ],
+    "1": [
+      "dictionary",
+      "dllimport",
+      "framemonitor_cs_framemonitor",
+      "framemonitor_gamebottleneckdetector_framemonitor",
+      "framemonitor_gamebottleneckdetector_framemonitor_dispose",
+      "framemonitor_gamebottleneckdetector_framemonitor_error",
+      "framemonitor_gamebottleneckdetector_framemonitor_getforegroundstats",
+      "framemonitor_gamebottleneckdetector_framemonitor_getforegroundwindow",
+      "framemonitor_gamebottleneckdetector_framemonitor_getstats",
+      "framemonitor_gamebottleneckdetector_framemonitor_getwindowthreadprocessid",
+      "framemonitor_gamebottleneckdetector_framemonitor_onevent",
+      "framemonitor_gamebottleneckdetector_framemonitor_processname",
+      "framemonitor_gamebottleneckdetector_framemonitor_running",
+      "framemonitor_gamebottleneckdetector_framestats",
+      "guid",
+      "idisposable",
+      "intptr",
+      "microsoft_diagnostics_tracing",
+      "microsoft_diagnostics_tracing_session",
+      "system_diagnostics",
+      "system_runtime_interopservices",
+      "thread",
+      "traceevent",
+      "traceeventsession"
+    ],
+    "2": [
+      "app",
+      "app_application",
+      "app_xaml",
+      "app_xaml_gamebottleneckdetector_app",
+      "bottleneckanalyzer",
+      "brush",
+      "csharp_namespace:95bca50486aaa58b",
+      "htmlreportexporter",
+      "htmlreportexporter_gamebottleneckdetector_htmlreportexporter",
+      "librehardwaremonitor_hardware",
+      "mainwindow_xaml",
+      "mainwindow_xaml_gamebottleneckdetector_distributionitem",
+      "sensormonitor_cs_sensormonitor",
+      "sensorrow_cs_sensorrow",
+      "system_collections_objectmodel",
+      "system_componentmodel",
+      "system_io",
+      "system_text",
+      "system_text_json",
+      "system_windows",
+      "system_windows_media",
+      "system_windows_threading"
+    ],
+    "3": [
+      "bottleneckanalyzer_gamebottleneckdetector_bottlenecksession",
+      "bottleneckanalyzer_gamebottleneckdetector_bottlenecksession_add",
+      "bottleneckanalyzer_gamebottleneckdetector_bottlenecksession_avg",
+      "bottleneckanalyzer_gamebottleneckdetector_bottlenecksession_avgfps",
+      "bottleneckanalyzer_gamebottleneckdetector_bottlenecksession_avglow1",
+      "bottleneckanalyzer_gamebottleneckdetector_bottlenecksession_count",
+      "bottleneckanalyzer_gamebottleneckdetector_bottlenecksession_distribution",
+      "bottleneckanalyzer_gamebottleneckdetector_bottlenecksession_done",
+      "bottleneckanalyzer_gamebottleneckdetector_bottlenecksession_duration",
+      "bottleneckanalyzer_gamebottleneckdetector_bottlenecksession_main",
+      "bottleneckanalyzer_gamebottleneckdetector_bottlenecksession_max",
+      "bottleneckanalyzer_gamebottleneckdetector_bottlenecksession_minfps",
+      "bottleneckanalyzer_gamebottleneckdetector_bottlenecksession_samples",
+      "bottleneckanalyzer_gamebottleneckdetector_bottlenecksession_start",
+      "bottleneckanalyzer_gamebottleneckdetector_loadsample",
+      "datetime",
+      "func",
+      "htmlreportexporter_gamebottleneckdetector_htmlreportexporter_generatehtmlreport",
+      "ireadonlylist",
+      "list",
+      "timespan"
+    ],
+    "4": [
+      "bottleneckanalyzer_gamebottleneckdetector_bottleneckanalyzer",
+      "bottleneckanalyzer_gamebottleneckdetector_bottleneckanalyzer_advice",
+      "bottleneckanalyzer_gamebottleneckdetector_bottleneckanalyzer_balance",
+      "bottleneckanalyzer_gamebottleneckdetector_bottleneckanalyzer_sample",
+      "bottleneckanalyzer_gamebottleneckdetector_bottleneckanalyzer_title",
+      "dispatchertimer",
+      "framemonitor_gamebottleneckdetector_framemonitor_start",
+      "mainwindow_btnexporthtml",
+      "mainwindow_btnsession",
+      "mainwindow_xaml_gamebottleneckdetector_mainwindow",
+      "mainwindow_xaml_gamebottleneckdetector_mainwindow_btnexporthtml_click",
+      "mainwindow_xaml_gamebottleneckdetector_mainwindow_btnsession_click",
+      "mainwindow_xaml_gamebottleneckdetector_mainwindow_finishsession",
+      "mainwindow_xaml_gamebottleneckdetector_mainwindow_inithardwareasync",
+      "mainwindow_xaml_gamebottleneckdetector_mainwindow_updatetelemetry",
+      "routedeventargs",
+      "sensormonitor_gamebottleneckdetector_sensormonitor_openasync",
+      "task",
+      "xaml_button"
+    ],
+    "5": [
+      "computer",
+      "ihardware",
+      "observablecollection",
+      "sensormonitor_gamebottleneckdetector_sensormonitor",
+      "sensormonitor_gamebottleneckdetector_sensormonitor_cpuload",
+      "sensormonitor_gamebottleneckdetector_sensormonitor_cpuname",
+      "sensormonitor_gamebottleneckdetector_sensormonitor_cputemperature",
+      "sensormonitor_gamebottleneckdetector_sensormonitor_dispose",
+      "sensormonitor_gamebottleneckdetector_sensormonitor_gpuload",
+      "sensormonitor_gamebottleneckdetector_sensormonitor_gpuname",
+      "sensormonitor_gamebottleneckdetector_sensormonitor_gputemperature",
+      "sensormonitor_gamebottleneckdetector_sensormonitor_iselevated",
+      "sensormonitor_gamebottleneckdetector_sensormonitor_isopen",
+      "sensormonitor_gamebottleneckdetector_sensormonitor_ramusagepct",
+      "sensormonitor_gamebottleneckdetector_sensormonitor_refresh",
+      "sensormonitor_gamebottleneckdetector_sensormonitor_rows",
+      "sensormonitor_gamebottleneckdetector_sensormonitor_vramusagepct",
+      "sensormonitor_gamebottleneckdetector_sensormonitor_walk"
+    ],
+    "6": [
+      "hardwaretype",
+      "inotifypropertychanged",
+      "sensorrow_gamebottleneckdetector_sensorrow",
+      "sensorrow_gamebottleneckdetector_sensorrow_category",
+      "sensorrow_gamebottleneckdetector_sensorrow_format",
+      "sensorrow_gamebottleneckdetector_sensorrow_hardware",
+      "sensorrow_gamebottleneckdetector_sensorrow_hardwaretype",
+      "sensorrow_gamebottleneckdetector_sensorrow_id",
+      "sensorrow_gamebottleneckdetector_sensorrow_max",
+      "sensorrow_gamebottleneckdetector_sensorrow_min",
+      "sensorrow_gamebottleneckdetector_sensorrow_name",
+      "sensorrow_gamebottleneckdetector_sensorrow_rawvalue",
+      "sensorrow_gamebottleneckdetector_sensorrow_type",
+      "sensorrow_gamebottleneckdetector_sensorrow_update",
+      "sensorrow_gamebottleneckdetector_sensorrow_value",
+      "sensortype"
+    ],
+    "7": [
+      "bottleneckanalyzer_gamebottleneckdetector_bottlenecksmoother",
+      "bottleneckanalyzer_gamebottleneckdetector_bottlenecksmoother_average",
+      "bottleneckanalyzer_gamebottleneckdetector_bottlenecksmoother_process",
+      "bottleneckanalyzer_gamebottleneckdetector_bottlenecksmoother_samplecount",
+      "bottleneckanalyzer_gamebottleneckdetector_limiter",
+      "bottleneckanalyzer_gamebottleneckdetector_limiter_capped",
+      "bottleneckanalyzer_gamebottleneckdetector_limiter_cpu",
+      "bottleneckanalyzer_gamebottleneckdetector_limiter_gpu",
+      "bottleneckanalyzer_gamebottleneckdetector_limiter_ram",
+      "bottleneckanalyzer_gamebottleneckdetector_limiter_thermal",
+      "bottleneckanalyzer_gamebottleneckdetector_limiter_vram",
+      "bottleneckanalyzer_gamebottleneckdetector_loadsample_classify",
+      "ienumerable",
+      "queue"
+    ],
+    "8": [
+      "mainwindow_barbalance",
+      "mainwindow_barcpucore",
+      "mainwindow_barcpuload",
+      "mainwindow_bargpuload",
+      "mainwindow_barram",
+      "mainwindow_bartemps",
+      "mainwindow_barvram",
+      "xaml_progressbar"
+    ],
+    "9": [
+      "framework_net8_0_windows",
+      "gamebottleneckdetector",
+      "nuget_librehardwaremonitorlib",
+      "nuget_microsoft_diagnostics_tracing_traceevent",
+      "nuget_system_management",
+      "sdk_microsoft_net_sdk"
+    ],
+    "10": [
+      "mainwindow_badgeadmin",
+      "mainwindow_boxthermalalert",
+      "mainwindow_cardagora",
+      "mainwindow_panelresults",
+      "mainwindow_pillstatus",
+      "xaml_border"
+    ],
+    "11": [
+      "mainwindow_rb10min",
+      "mainwindow_rb1min",
+      "mainwindow_rb3min",
+      "mainwindow_rb5min",
+      "xaml_radiobutton"
+    ],
+    "12": [
+      "mainwindow_listdistribution",
+      "xaml_itemscontrol"
+    ]
+  },
+  "cohesion": {
+    "0": 0.1206896551724138,
+    "1": 0.11231884057971014,
+    "2": 0.10822510822510822,
+    "3": 0.1380952380952381,
+    "4": 0.15789473684210525,
+    "5": 0.11764705882352941,
+    "6": 0.125,
+    "7": 0.17582417582417584,
+    "8": 0.25,
+    "9": 0.3333333333333333,
+    "10": 0.3333333333333333,
+    "11": 0.4,
+    "12": 1.0
+  },
+  "gods": [
+    {
+      "id": "mainwindow_window",
+      "label": "Window",
+      "degree": 47
+    },
+    {
+      "id": "bottleneckanalyzer_gamebottleneckdetector_bottlenecksession",
+      "label": "BottleneckSession",
+      "degree": 23
+    },
+    {
+      "id": "sensormonitor_gamebottleneckdetector_sensormonitor",
+      "label": "SensorMonitor",
+      "degree": 23
+    },
+    {
+      "id": "xaml_textblock",
+      "label": "TextBlock",
+      "degree": 22
+    },
+    {
+      "id": "framemonitor_gamebottleneckdetector_framemonitor",
+      "label": "FrameMonitor",
+      "degree": 18
+    },
+    {
+      "id": "sensorrow_gamebottleneckdetector_sensorrow",
+      "label": "SensorRow",
+      "degree": 18
+    },
+    {
+      "id": "mainwindow_xaml_gamebottleneckdetector_mainwindow",
+      "label": "MainWindow",
+      "degree": 14
+    },
+    {
+      "id": "bottleneckanalyzer_gamebottleneckdetector_limiter",
+      "label": "Limiter",
+      "degree": 14
+    },
+    {
+      "id": "bottleneckanalyzer_gamebottleneckdetector_loadsample",
+      "label": "LoadSample",
+      "degree": 10
+    },
+    {
+      "id": "bottleneckanalyzer_gamebottleneckdetector_bottlenecksmoother",
+      "label": "BottleneckSmoother",
+      "degree": 8
+    }
+  ],
+  "surprises": [
+    {
+      "source": "MainWindow",
+      "target": "FrameMonitor",
+      "source_files": [
+        "MainWindow.xaml.cs",
+        "FrameMonitor.cs"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "references",
+      "why": "bridges separate communities"
+    },
+    {
+      "source": "MainWindow",
+      "target": "BottleneckSession",
+      "source_files": [
+        "MainWindow.xaml.cs",
+        "BottleneckAnalyzer.cs"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "references",
+      "why": "bridges separate communities"
+    },
+    {
+      "source": "MainWindow",
+      "target": "BottleneckSmoother",
+      "source_files": [
+        "MainWindow.xaml.cs",
+        "BottleneckAnalyzer.cs"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "references",
+      "why": "bridges separate communities"
+    },
+    {
+      "source": "MainWindow",
+      "target": "Window",
+      "source_files": [
+        "MainWindow.xaml.cs",
+        "MainWindow.xaml"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "inherits",
+      "why": "bridges separate communities"
+    },
+    {
+      "source": "MainWindow",
+      "target": "SensorMonitor",
+      "source_files": [
+        "MainWindow.xaml.cs",
+        "SensorMonitor.cs"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "references",
+      "why": "bridges separate communities"
+    }
+  ],
+  "questions": [
+    {
+      "type": "bridge_node",
+      "question": "Why does `MainWindow` connect `MainWindow` to `Window`, `FrameMonitor`, `MainWindow.xaml.cs`, `BottleneckSession`, `SensorMonitor`, `Limiter`?",
+      "why": "High betweenness centrality (0.551) - this node is a cross-community bridge."
+    },
+    {
+      "type": "isolated_nodes",
+      "question": "What connects `ColorBrush`, `Label`, `Pct` to the rest of the system?",
+      "why": "49 weakly-connected nodes found - possible documentation gaps or missing edges."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `Window` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.1206896551724138 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `Window` connect `Window` to `MainWindow`, `ProgressBar`, `Border`, `RadioButton`, `ListDistribution`?",
+      "why": "High betweenness centrality (0.434) - this node is a cross-community bridge."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `FrameMonitor` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.11231884057971014 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `SensorMonitor` connect `SensorMonitor` to `FrameMonitor`, `MainWindow.xaml.cs`, `MainWindow`, `SensorRow`?",
+      "why": "High betweenness centrality (0.292) - this node is a cross-community bridge."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `MainWindow.xaml.cs` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.10822510822510822 - nodes in this community are weakly interconnected."
+    }
+  ]
+}

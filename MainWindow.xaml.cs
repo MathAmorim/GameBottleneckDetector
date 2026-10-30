@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 
@@ -15,12 +16,16 @@ public partial class MainWindow : Window
     private readonly BottleneckSmoother _smoother;
     private readonly DispatcherTimer _timer;
     private readonly AppSettings _settings;
+    private readonly CompanionServer _companionServer;
 
     private BottleneckSession? _session;
     private BottleneckSession? _lastFinishedSession;
     private string _cpuName = "Intel Core i7-7700HQ";
     private string _gpuName = "NVIDIA GeForce GTX 1050 Ti";
     private bool _initializingSettings = true;
+
+    // Cache do último resultado formatado para enviar ao painel mobile
+    private object _lastResultPayload = new { hasResult = false };
 
     public MainWindow()
     {
@@ -31,9 +36,19 @@ public partial class MainWindow : Window
         _monitor = new SensorMonitor();
         _frameMonitor = new FrameMonitor();
         _smoother = new BottleneckSmoother();
+        _companionServer = new CompanionServer(_settings.CompanionPort);
 
-        // Aplicar preferências nos RadioButtons de configuração
+        _companionServer.StartSessionRequested += durSec => Dispatcher.Invoke(() => StartSessionWithDuration(durSec));
+        _companionServer.StopSessionRequested += () => Dispatcher.Invoke(() =>
+        {
+            if (_session != null) FinishSession();
+        });
+        _companionServer.DiscardSessionRequested += () => Dispatcher.Invoke(DiscardSession);
+        _companionServer.MarkLagRequested += () => Dispatcher.Invoke(MarkLagSpike);
+
+        // Aplicar preferências nos controles de configuração
         LoadSettingsUi();
+        SyncCompanionServerState();
 
         // Verificar Admin
         bool isAdmin = SensorMonitor.IsElevated;
@@ -52,6 +67,7 @@ public partial class MainWindow : Window
         Closed += (_, _) =>
         {
             _timer.Stop();
+            _companionServer.Dispose();
             _frameMonitor.Dispose();
             _monitor.Dispose();
         };
@@ -73,7 +89,83 @@ public partial class MainWindow : Window
             case MemoryDisplayMode.Megabytes: RbVramMb.IsChecked = true; break;
             default: RbVramGb.IsChecked = true; break;
         }
+
+        switch (_settings.MarkerWindowSeconds)
+        {
+            case 20: RbMarker20s.IsChecked = true; break;
+            case 60: RbMarker60s.IsChecked = true; break;
+            default: RbMarker30s.IsChecked = true; break;
+        }
+
+        ChkCompanionEnabled.IsChecked = _settings.CompanionEnabled;
         _initializingSettings = false;
+    }
+
+    private void SyncCompanionServerState()
+    {
+        if (_settings.CompanionEnabled)
+        {
+            bool ok = _companionServer.Start();
+            string url = _companionServer.LocalUrl;
+            TxtCompanionUrl.Text = url;
+            ImgCompanionQr.Source = QrCodeGenerator.Generate(url, 160);
+            ImgCompanionQr.Opacity = ok ? 1.0 : 0.35;
+
+            if (ok)
+            {
+                TxtCompanionTop.Text = $"Segunda Tela: {url.Replace("http://", "")}";
+                BadgeCompanionTop.BorderBrush = (Brush)new BrushConverter().ConvertFromString("#1F6FEB")!;
+                TxtCompanionStatus.Text = "1. Conecte o celular na mesma rede Wi-Fi do PC · 2. Aponte a câmera para o QR Code · 3. No navegador do Android, toque em 'Adicionar à tela inicial' para usar em tela cheia.";
+            }
+            else
+            {
+                TxtCompanionTop.Text = "Segunda Tela: Erro";
+                TxtCompanionStatus.Text = $"Não foi possível iniciar na porta {_companionServer.Port}: {_companionServer.ErrorMessage}";
+            }
+        }
+        else
+        {
+            _companionServer.Stop();
+            string url = _companionServer.LocalUrl;
+            TxtCompanionUrl.Text = url + " (Desativado)";
+            ImgCompanionQr.Source = QrCodeGenerator.Generate(url, 160);
+            ImgCompanionQr.Opacity = 0.25;
+            TxtCompanionTop.Text = "Segunda Tela: Off";
+            BadgeCompanionTop.BorderBrush = (Brush)new BrushConverter().ConvertFromString("#30363D")!;
+            TxtCompanionStatus.Text = "Servidor Segunda Tela desativado. Marque a caixa acima para ativar o acesso pelo celular.";
+        }
+    }
+
+    private void BadgeCompanionTop_Click(object sender, MouseButtonEventArgs e)
+    {
+        TabBtnSettings.IsChecked = true;
+    }
+
+    private void BtnCopyCompanionUrl_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            Clipboard.SetText(_companionServer.LocalUrl);
+            TxtSettingsSaved.Text = $"✓ Link copiado para a área de transferência: {_companionServer.LocalUrl}";
+        }
+        catch { }
+    }
+
+    private void BtnOpenCompanionBrowser_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (!_companionServer.IsRunning)
+            {
+                ChkCompanionEnabled.IsChecked = true;
+            }
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = _companionServer.LocalUrl,
+                UseShellExecute = true
+            });
+        }
+        catch { }
     }
 
     private void TabBtn_Checked(object sender, RoutedEventArgs e)
@@ -108,7 +200,19 @@ public partial class MainWindow : Window
         else if (RbVramMb.IsChecked == true) _settings.VramDisplayMode = MemoryDisplayMode.Megabytes;
         else _settings.VramDisplayMode = MemoryDisplayMode.Gigabytes;
 
+        if (RbMarker20s.IsChecked == true) _settings.MarkerWindowSeconds = 20;
+        else if (RbMarker60s.IsChecked == true) _settings.MarkerWindowSeconds = 60;
+        else _settings.MarkerWindowSeconds = 30;
+
+        bool prevCompanion = _settings.CompanionEnabled;
+        _settings.CompanionEnabled = ChkCompanionEnabled.IsChecked == true;
+
         _settings.Save();
+
+        if (prevCompanion != _settings.CompanionEnabled)
+        {
+            SyncCompanionServerState();
+        }
     }
 
     private async Task InitHardwareAsync()
@@ -142,14 +246,15 @@ public partial class MainWindow : Window
         var (smoothed, activeLimiter, badgeColor) = _smoother.Process(rawSample);
 
         // 1. Atualizar card AGORA (Suavizado e Estável)
-        TxtLiveTitle.Text = BottleneckAnalyzer.Title(activeLimiter);
-        TxtLiveAdvice.Text = BottleneckAnalyzer.Advice(activeLimiter, smoothed.CpuTemp);
+        string liveTitle = BottleneckAnalyzer.Title(activeLimiter);
+        string liveAdvice = BottleneckAnalyzer.Advice(activeLimiter, smoothed.CpuTemp);
+        TxtLiveTitle.Text = liveTitle;
+        TxtLiveAdvice.Text = liveAdvice;
         TxtLiveGame.Text = frames != null
             ? $"{frames.ProcessName} · {frames.Fps:0} FPS · 1% low {frames.Low1Fps:0} FPS"
             : "Nenhum jogo 3D em primeiro plano (o FPS aparece automaticamente ao jogar)";
 
-        PillStatus.Background = (Brush)new BrushConverter().ConvertFromString(badgeColor)!;
-        TxtPillStatus.Text = activeLimiter switch
+        string pillText = activeLimiter switch
         {
             Limiter.Thermal => "TÉRMICO",
             Limiter.Vram => "VRAM CHEIA",
@@ -157,7 +262,11 @@ public partial class MainWindow : Window
             Limiter.Gpu => "GPU 100% (IDEAL)",
             _ => "ESTÁVEL"
         };
-        IconPillStatus.Icon = (activeLimiter == Limiter.Thermal || activeLimiter == Limiter.Vram || activeLimiter == Limiter.Cpu)
+        bool isWarning = activeLimiter == Limiter.Thermal || activeLimiter == Limiter.Vram || activeLimiter == Limiter.Cpu;
+
+        PillStatus.Background = (Brush)new BrushConverter().ConvertFromString(badgeColor)!;
+        TxtPillStatus.Text = pillText;
+        IconPillStatus.Icon = isWarning
             ? FontAwesome.Sharp.IconChar.TriangleExclamation
             : FontAwesome.Sharp.IconChar.CircleCheck;
 
@@ -170,10 +279,11 @@ public partial class MainWindow : Window
         TxtCpuLoad.Text = $"{cpuLoad:0} %";
         BarCpuLoad.Value = Math.Clamp(cpuLoad, 0, 100);
 
+        string busiestCoreLabel = !string.IsNullOrEmpty(smoothed.BusiestCore) ? $"Núcleo ({smoothed.BusiestCore})" : "Núcleo Mais Ocupado";
         if (smoothed.CpuMaxCore != null)
         {
             TxtCpuCore.Text = $"{smoothed.CpuMaxCore:0} %";
-            LblCpuCore.Text = !string.IsNullOrEmpty(smoothed.BusiestCore) ? $"Núcleo ({smoothed.BusiestCore})" : "Núcleo Mais Ocupado";
+            LblCpuCore.Text = busiestCoreLabel;
             BarCpuCore.Value = Math.Clamp(smoothed.CpuMaxCore.Value, 0, 100);
         }
 
@@ -198,24 +308,26 @@ public partial class MainWindow : Window
         float vramUsedGb = (vramUsedMb ?? 0) / 1024f;
         float vramTotalGb = vramTotalMb / 1024f;
 
-        TxtVram.Text = _settings.VramDisplayMode switch
+        string vramText = _settings.VramDisplayMode switch
         {
             MemoryDisplayMode.Percentage => $"{vramPct:0} %",
             MemoryDisplayMode.Megabytes => $"{(vramUsedMb ?? 0):0} MB / {vramTotalMb:0} MB ({vramPct:0}%)",
             _ => $"{vramUsedGb:0.0} GB / {vramTotalGb:0.0} GB ({vramPct:0}%)"
         };
+        TxtVram.Text = vramText;
 
         float ramPct = smoothed.RamPct ?? 0;
         BarRam.Value = Math.Clamp(ramPct, 0, 100);
         float ramTotalGb = _monitor.RamTotalGb ?? SensorMonitor.GetSystemTotalRamGb();
         float ramUsedGb = _monitor.RamUsedGb ?? ((ramPct / 100f) * ramTotalGb);
 
-        TxtRam.Text = _settings.RamDisplayMode switch
+        string ramText = _settings.RamDisplayMode switch
         {
             MemoryDisplayMode.Percentage => $"{ramPct:0} %",
             MemoryDisplayMode.Megabytes => $"{(ramUsedGb * 1024):0} MB / {(ramTotalGb * 1024):0} MB ({ramPct:0}%)",
             _ => $"{ramUsedGb:0.0} GB / {ramTotalGb:0.0} GB ({ramPct:0}%)"
         };
+        TxtRam.Text = ramText;
 
         // 5. Atualizar gravação de sessão se estiver ativa
         if (_session != null)
@@ -223,14 +335,17 @@ public partial class MainWindow : Window
             _session.Add(rawSample);
             var elapsed = DateTime.Now - _session.Start;
             string gameName = frames != null ? frames.ProcessName : "Alterne para o jogo agora";
+            string markersSuffix = _session.MarkerSampleIndices.Count > 0
+                ? $" · 📌 {_session.MarkerSampleIndices.Count} travamento(s)"
+                : "";
 
             if (_session.IsContinuous)
             {
-                TxtSessionStatus.Text = $"🔴 Gravando sessão livre: {elapsed:m\\:ss} ({_session.Count} amostras) · Jogo: {gameName} · Clique em 'Concluir Análise' ao terminar.";
+                TxtSessionStatus.Text = $"🔴 Gravando sessão livre: {elapsed:m\\:ss} ({_session.Count} amostras) · Jogo: {gameName}{markersSuffix}";
             }
             else
             {
-                TxtSessionStatus.Text = $"🔴 Gravando: {elapsed:m\\:ss} de {_session.Duration:m\\:ss} ({_session.Count} amostras) · Jogo: {gameName}";
+                TxtSessionStatus.Text = $"🔴 Gravando: {elapsed:m\\:ss} de {_session.Duration:m\\:ss} ({_session.Count} amostras) · Jogo: {gameName}{markersSuffix}";
             }
 
             if (_session.Done)
@@ -238,25 +353,67 @@ public partial class MainWindow : Window
                 FinishSession();
             }
         }
+
+        // 6. Atualizar snapshot JSON da Segunda Tela (Mobile Companion)
+        int selectedDurationSec = GetSelectedDurationSeconds();
+        _companionServer.UpdateTelemetryJson(new
+        {
+            hardwareInfo = $"{_cpuName} · {_gpuName}",
+            limiter = activeLimiter.ToString(),
+            pillText,
+            badgeColor,
+            isWarningLimiter = isWarning,
+            liveTitle,
+            liveAdvice,
+            gameName = frames?.ProcessName ?? "Nenhum jogo 3D em foco",
+            fps = Math.Round(frames?.Fps ?? 0),
+            low1Fps = Math.Round(frames?.Low1Fps ?? 0),
+            cpuLoad = Math.Round(cpuLoad),
+            cpuTemp = cpuT > 0 ? (int?)Math.Round(cpuT) : null,
+            cpuMaxCore = Math.Round(smoothed.CpuMaxCore ?? 0),
+            busiestCoreLabel,
+            gpuLoad = Math.Round(gpuLoad),
+            gpuTemp = gpuT > 0 ? (int?)Math.Round(gpuT) : null,
+            vramPct = Math.Round(vramPct),
+            vramText,
+            ramPct = Math.Round(ramPct),
+            ramText,
+            session = new
+            {
+                isRecording = _session != null,
+                durationSeconds = _session != null ? (int)_session.Duration.TotalSeconds : selectedDurationSec,
+                statusText = TxtSessionStatus.Text,
+                markersCount = _session?.MarkerSampleIndices.Count ?? 0
+            },
+            lastResult = _lastResultPayload
+        });
     }
 
-    private void BtnSession_Click(object sender, RoutedEventArgs e)
+    private int GetSelectedDurationSeconds()
     {
-        if (_session != null)
+        if (RbContinuous.IsChecked == true) return 0;
+        if (Rb3Min.IsChecked == true) return 180;
+        if (Rb5Min.IsChecked == true) return 300;
+        if (Rb10Min.IsChecked == true) return 600;
+        return 60;
+    }
+
+    private void StartSessionWithDuration(int durationSeconds)
+    {
+        if (_session != null) return;
+
+        switch (durationSeconds)
         {
-            // O usuário clicou para CONCLUIR a sessão (seja contínua ou antecipada)
-            FinishSession();
-            return;
+            case 0: RbContinuous.IsChecked = true; break;
+            case 60: Rb1Min.IsChecked = true; break;
+            case 180: Rb3Min.IsChecked = true; break;
+            case 300: Rb5Min.IsChecked = true; break;
+            case 600: Rb10Min.IsChecked = true; break;
         }
 
-        // Iniciar nova sessão
-        TimeSpan duration = TimeSpan.FromMinutes(1);
-        if (RbContinuous.IsChecked == true) duration = TimeSpan.Zero; // Modo livre
-        else if (Rb3Min.IsChecked == true) duration = TimeSpan.FromMinutes(3);
-        else if (Rb5Min.IsChecked == true) duration = TimeSpan.FromMinutes(5);
-        else if (Rb10Min.IsChecked == true) duration = TimeSpan.FromMinutes(10);
-
+        TimeSpan duration = durationSeconds <= 0 ? TimeSpan.Zero : TimeSpan.FromSeconds(durationSeconds);
         _session = new BottleneckSession { Duration = duration };
+        _lastResultPayload = new { hasResult = false };
         PanelResults.Visibility = Visibility.Collapsed;
         PanelDurations.IsEnabled = false;
 
@@ -269,7 +426,13 @@ public partial class MainWindow : Window
             : $"Gravação iniciada! Jogue normalmente pelos próximos {duration.TotalMinutes:0} minuto(s)...";
     }
 
-    private void BtnDiscardSession_Click(object sender, RoutedEventArgs e)
+    private void MarkLagSpike()
+    {
+        if (_session == null) return;
+        _session.AddMarker();
+    }
+
+    private void DiscardSession()
     {
         if (_session == null) return;
 
@@ -279,6 +442,22 @@ public partial class MainWindow : Window
         BtnSession.Style = (Style)FindResource("PrimaryButton");
         BtnDiscardSession.Visibility = Visibility.Collapsed;
         TxtSessionStatus.Text = "Gravação descartada sem salvar relatório.";
+    }
+
+    private void BtnSession_Click(object sender, RoutedEventArgs e)
+    {
+        if (_session != null)
+        {
+            FinishSession();
+            return;
+        }
+
+        StartSessionWithDuration(GetSelectedDurationSeconds());
+    }
+
+    private void BtnDiscardSession_Click(object sender, RoutedEventArgs e)
+    {
+        DiscardSession();
     }
 
     private void FinishSession()
@@ -301,7 +480,8 @@ public partial class MainWindow : Window
         TxtSessionStatus.Text = $"Análise finalizada com sucesso às {DateTime.Now:HH:mm:ss} ({sess.Count} amostras registradas).";
 
         var main = sess.Main ?? Limiter.Capped;
-        TxtResultTitle.Text = $"Resultado: {BottleneckAnalyzer.Title(main)}";
+        string resultTitle = $"Resultado: {BottleneckAnalyzer.Title(main)}";
+        TxtResultTitle.Text = resultTitle;
 
         double maxCpu = sess.Max(x => x.CpuTemp) ?? 0;
         double maxGpu = sess.Max(x => x.GpuTemp) ?? 0;
@@ -316,16 +496,20 @@ public partial class MainWindow : Window
         parts.Add($"CPU máx: {maxCpu:0} °C");
         parts.Add($"GPU máx: {maxGpu:0} °C");
         if (maxVram > 0) parts.Add($"VRAM máx: {maxVram:0} %");
+        if (sess.MarkerSampleIndices.Count > 0) parts.Add($"📌 {sess.MarkerSampleIndices.Count} travamento(s)");
 
-        TxtResultSummary.Text = string.Join("  ·  ", parts);
+        string resultSummary = string.Join("  ·  ", parts);
+        TxtResultSummary.Text = resultSummary;
 
         // Alerta de Throttling Térmico Crítico
+        string thermalAlert = "";
         if (maxCpu >= 95)
         {
+            thermalAlert = $"SUPER-AQUECIMENTO (THERMAL THROTTLING): A CPU atingiu {maxCpu:0} °C durante a partida! " +
+                           $"Ao ultrapassar 95 °C, o processador Core i7-7700HQ corta bruscamente a frequência para evitar queima física. " +
+                           $"Isso causa quedas instantâneas de FPS e congelamentos de tela.";
             BoxThermalAlert.Visibility = Visibility.Visible;
-            TxtThermalAlert.Text = $"SUPER-AQUECIMENTO (THERMAL THROTTLING): A CPU atingiu {maxCpu:0} °C durante a partida! " +
-                                   $"Ao ultrapassar 95 °C, o processador Core i7-7700HQ corta bruscamente a frequência para evitar queima física. " +
-                                   $"Isso causa quedas instantâneas de FPS e congelamentos de tela.";
+            TxtThermalAlert.Text = thermalAlert;
         }
         else
         {
@@ -333,7 +517,8 @@ public partial class MainWindow : Window
         }
 
         // Distribuição do tempo
-        var distItems = sess.Distribution().Select(d =>
+        var rawDist = sess.Distribution();
+        var distItems = rawDist.Select(d =>
         {
             string colorHex = d.Limiter switch
             {
@@ -353,9 +538,40 @@ public partial class MainWindow : Window
         }).ToList();
 
         ListDistribution.ItemsSource = distItems;
-        TxtResultAdvice.Text = BottleneckAnalyzer.Advice(main, maxCpu);
+        string advice = BottleneckAnalyzer.Advice(main, maxCpu);
+        TxtResultAdvice.Text = advice;
         TxtExportStatus.Text = "";
         PanelResults.Visibility = Visibility.Visible;
+
+        // Pré-gerar relatório HTML para disponibilizar imediatamente na Segunda Tela (/api/report/latest)
+        float ramTotal = _monitor.RamTotalGb ?? SensorMonitor.GetSystemTotalRamGb();
+        string ramInfo = (ramTotal % 1 == 0) ? $"{ramTotal:0} GB" : $"{ramTotal:0.0} GB";
+        string reportHtml = HtmlReportExporter.BuildHtmlReportContent(sess, _cpuName, _gpuName, ramInfo, _settings.MarkerWindowSeconds);
+        _companionServer.UpdateLatestReportHtml(reportHtml);
+
+        _lastResultPayload = new
+        {
+            hasResult = true,
+            title = resultTitle,
+            summary = resultSummary,
+            thermalAlert,
+            advice,
+            distribution = rawDist.Select(d => new
+            {
+                label = BottleneckAnalyzer.Title(d.Limiter),
+                pct = Math.Round(d.Pct),
+                pctText = $"{d.Pct:0} %",
+                color = d.Limiter switch
+                {
+                    Limiter.Thermal => "#DA3633",
+                    Limiter.Vram => "#D29922",
+                    Limiter.Cpu => "#E91E63",
+                    Limiter.Gpu => "#238636",
+                    Limiter.Ram => "#BC8CFF",
+                    _ => "#58A6FF"
+                }
+            }).ToArray()
+        };
     }
 
     private void BtnExportHtml_Click(object sender, RoutedEventArgs e)
@@ -373,7 +589,7 @@ public partial class MainWindow : Window
 
             float ramTotal = _monitor.RamTotalGb ?? SensorMonitor.GetSystemTotalRamGb();
             string ramInfo = (ramTotal % 1 == 0) ? $"{ramTotal:0} GB" : $"{ramTotal:0.0} GB";
-            HtmlReportExporter.GenerateHtmlReport(_lastFinishedSession, _cpuName, _gpuName, fullPath, ramInfo);
+            HtmlReportExporter.GenerateHtmlReport(_lastFinishedSession, _cpuName, _gpuName, fullPath, ramInfo, _settings.MarkerWindowSeconds);
 
             TxtExportStatus.Text = $"✓ Relatório gerado com sucesso: {fullPath}";
 

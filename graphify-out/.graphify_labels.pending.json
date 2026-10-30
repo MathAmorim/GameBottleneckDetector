@@ -1,6 +1,14 @@
 {
   "2": "GameBottleneckDetector",
+  "3": "CompanionServer",
   "4": "MainWindow",
+  "6": "QrCodeGenerator",
   "7": "Limiter",
-  "11": "RadioButton"
+  "8": "Border",
+  "10": "ProgressBar",
+  "11": "RadioButton",
+  "12": "IconImage",
+  "13": "StackPanel",
+  "14": "ImgCompanionQr",
+  "15": "ListDistribution"
 }

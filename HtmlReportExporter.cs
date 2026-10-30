@@ -11,15 +11,32 @@ public static class HtmlReportExporter
         string cpuName,
         string gpuName,
         string outputPath,
-        string? ramInfo = null)
+        string? ramInfo = null,
+        int markerWindowSeconds = 30)
+    {
+        string html = BuildHtmlReportContent(session, cpuName, gpuName, ramInfo, markerWindowSeconds);
+        File.WriteAllText(outputPath, html, Encoding.UTF8);
+        return outputPath;
+    }
+
+    public static string BuildHtmlReportContent(
+        BottleneckSession session,
+        string cpuName,
+        string gpuName,
+        string? ramInfo = null,
+        int markerWindowSeconds = 30)
     {
         if (string.IsNullOrEmpty(ramInfo))
         {
             float rGb = SensorMonitor.GetSystemTotalRamGb();
             ramInfo = (rGb % 1 == 0) ? $"{rGb:0} GB" : $"{rGb:0.0} GB";
         }
+        if (markerWindowSeconds <= 0) markerWindowSeconds = 30;
+
         var main = session.Main ?? Limiter.Capped;
         var samples = session.Samples;
+        var markers = session.MarkerSampleIndices;
+        var markerSet = new HashSet<int>(markers);
         string gameName = samples.FirstOrDefault(s => !string.IsNullOrEmpty(s.GameProcess))?.GameProcess ?? "Jogo / Aplicação 3D";
 
         double avgFps = session.AvgFps ?? 0;
@@ -50,6 +67,15 @@ public static class HtmlReportExporter
         var cpuLoadData = samples.Select(s => s.CpuTotal ?? 0).ToArray();
         var gpuLoadData = samples.Select(s => s.GpuLoad ?? 0).ToArray();
         var vramData = samples.Select(s => s.VramPct ?? 0).ToArray();
+
+        // Construir intervalos de marcadores de travamento (ex: [idx - 30s .. idx])
+        var markerZones = markers.Select((idx, i) => new
+        {
+            number = i + 1,
+            startIdx = Math.Max(0, idx - markerWindowSeconds),
+            endIdx = Math.Min(Math.Max(0, samples.Count - 1), idx),
+            label = $"Lag #{i + 1} ({idx}s)"
+        }).ToArray();
 
         var sb = new StringBuilder();
         sb.Append($@"<!DOCTYPE html>
@@ -170,6 +196,28 @@ public static class HtmlReportExporter
         .legend {{ display: flex; flex-wrap: wrap; gap: 15px; font-size: 13px; margin-bottom: 25px; }}
         .legend-item {{ display: flex; align-items: center; gap: 6px; }}
         .legend-color {{ width: 12px; height: 12px; border-radius: 3px; }}
+
+        .marker-pills {{
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 14px;
+        }}
+        .marker-btn {{
+            background: rgba(210, 153, 34, 0.16);
+            border: 1px solid #d29922;
+            color: #e3b341;
+            padding: 7px 13px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12.5px;
+            font-weight: 600;
+            transition: all 0.15s ease;
+        }}
+        .marker-btn:hover {{
+            background: rgba(210, 153, 34, 0.3);
+            color: #fff;
+        }}
 
         table {{
             width: 100%;
@@ -298,10 +346,32 @@ public static class HtmlReportExporter
         <div class=""legend-item""><div class=""legend-color"" style=""background: #58a6ff;""></div> Sem Gargalo (Trava FPS / Menu)</div>
     </div>
 
-    <div class=""section-title"">Linha do Tempo: FPS vs Temperaturas e Cargas</div>
+    <div class=""section-title"">Linha do Tempo: FPS vs Temperaturas e Cargas</div>");
+
+        if (markerZones.Length > 0)
+        {
+            sb.Append($@"
+    <div class=""card"" style=""margin-bottom: 14px; padding: 14px 16px; border-color: #d29922; background: rgba(210, 153, 34, 0.06);"">
+        <div style=""font-size: 13px; font-weight: 700; color: #e3b341; margin-bottom: 8px;"">
+            📌 Travamentos Marcados na Partida (Janela analisada: {markerWindowSeconds}s anteriores ao toque):
+        </div>
+        <div class=""marker-pills"">");
+            foreach (var mz in markerZones)
+            {
+                sb.Append($@"
+            <button class=""marker-btn"" onclick=""focusLagRange({mz.startIdx}, {mz.endIdx})"">
+                🔍 Travamento #{mz.number}: {mz.startIdx}s até {mz.endIdx}s
+            </button>");
+            }
+            sb.Append(@"
+        </div>
+    </div>");
+        }
+
+        sb.Append(@"
     <div style=""display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;"">
         <span style=""font-size: 13px; color: var(--text-muted); display: inline-flex; align-items: center; gap: 6px;"">
-            🔍 <span><strong>Zoom Interativo:</strong> Selecione um trecho no gráfico para aproximar. Use a rodinha do mouse para ampliar ou segure Ctrl para arrastar.</span>
+            🔍 <span><strong>Zoom Interativo:</strong> Selecione um trecho no gráfico para aproximar. Use a rodinha do mouse/pinça para ampliar ou segure Ctrl para arrastar.</span>
         </span>
         <button id=""btnResetZoom"" onclick=""resetChartZoom()"" style=""background: var(--surface); border: 1px solid var(--border); color: var(--accent-blue); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease;"">
             <span>🔄 Resetar Zoom</span>
@@ -341,12 +411,15 @@ public static class HtmlReportExporter
         foreach (var s in samples)
         {
             var l = s.Classify();
-            string rowClass = l == Limiter.Thermal ? "style=\"background: rgba(218,54,51,0.15);\"" :
-                             l == Limiter.Vram ? "style=\"background: rgba(210,153,34,0.15);\"" : "";
             int curSec = sec++;
+            bool isMarked = markerSet.Contains(curSec);
+            string rowClass = isMarked ? "style=\"background: rgba(210,153,34,0.28); border-left: 3px solid #d29922;\"" :
+                             l == Limiter.Thermal ? "style=\"background: rgba(218,54,51,0.15);\"" :
+                             l == Limiter.Vram ? "style=\"background: rgba(210,153,34,0.15);\"" : "";
             string timeFormatted = curSec >= 60 
                 ? $"{curSec / 60:D2}:{curSec % 60:D2} ({curSec}s)" 
                 : $"{curSec}s";
+            if (isMarked) timeFormatted = "📌 " + timeFormatted;
 
             sb.Append($@"
                 <tr {rowClass}>
@@ -370,9 +443,42 @@ public static class HtmlReportExporter
 </div>
 
 <script>
+    const markerZones = {JsonSerializer.Serialize(markerZones)};
+    const lagMarkersPlugin = {{
+        id: 'lagMarkersPlugin',
+        beforeDatasetsDraw(chart) {{
+            if (!markerZones || !markerZones.length) return;
+            const {{ ctx, chartArea: {{ top, bottom, left, right }}, scales: {{ x }} }} = chart;
+            ctx.save();
+            markerZones.forEach(z => {{
+                const xStart = Math.max(left, Math.min(right, x.getPixelForValue(z.startIdx)));
+                const xEnd = Math.max(left, Math.min(right, x.getPixelForValue(z.endIdx)));
+                if (xEnd >= left && xStart <= right) {{
+                    ctx.fillStyle = 'rgba(210, 153, 34, 0.14)';
+                    ctx.fillRect(xStart, top, Math.max(2, xEnd - xStart), bottom - top);
+
+                    ctx.beginPath();
+                    ctx.setLineDash([5, 4]);
+                    ctx.strokeStyle = '#e3b341';
+                    ctx.lineWidth = 2;
+                    ctx.moveTo(xEnd, top);
+                    ctx.lineTo(xEnd, bottom);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+
+                    ctx.fillStyle = '#e3b341';
+                    ctx.font = 'bold 11px sans-serif';
+                    ctx.fillText('📌 ' + z.label, Math.max(left + 4, xEnd - 68), top + 14);
+                }}
+            }});
+            ctx.restore();
+        }}
+    }};
+
     const ctx = document.getElementById('perfChart').getContext('2d');
     window.perfChartInstance = new Chart(ctx, {{
         type: 'line',
+        plugins: [lagMarkersPlugin],
         data: {{
             labels: {JsonSerializer.Serialize(labels)},
             datasets: [
@@ -480,12 +586,20 @@ public static class HtmlReportExporter
             window.perfChartInstance.resetZoom();
         }}
     }};
+
+    window.focusLagRange = function(startIdx, endIdx) {{
+        if (!window.perfChartInstance) return;
+        const pad = 3;
+        const minVal = Math.max(0, startIdx - pad);
+        const maxVal = Math.min({Math.Max(0, labels.Length - 1)}, endIdx + pad);
+        window.perfChartInstance.zoomScale('x', {{ min: minVal, max: maxVal }}, 'default');
+        document.getElementById('perfChart').scrollIntoView({{ behavior: 'smooth', block: 'center' }});
+    }};
 </script>
 </body>
 </html>");
 
-        File.WriteAllText(outputPath, sb.ToString(), Encoding.UTF8);
-        return outputPath;
+        return sb.ToString();
     }
 
     private static string FormatDuration(int totalSeconds)
